@@ -1,0 +1,115 @@
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { parseError } from '../../../core/errors/api-error';
+import { Dashboard } from '../../../reporting/model/reporting';
+import { ReportingService } from '../../../reporting/services/reporting.service';
+import { Badge } from '../../../shared/components/badge/badge';
+import { ErrorAlert } from '../../../shared/components/error-alert/error-alert';
+import { Icon } from '../../../shared/components/icon/icon';
+import { Pager } from '../../../shared/components/pager/pager';
+import { Page } from '../../../shared/models/page';
+import { FechaPipe } from '../../../shared/pipes/fecha.pipe';
+import { SolesPipe } from '../../../shared/pipes/soles.pipe';
+import { ToastService } from '../../../shared/services/toast.service';
+import { initials } from '../../../shared/utils/initials';
+import { AccountStatus, CustomerAccount, UpdateAccount } from '../../model/customer';
+import { CustomersService } from '../../services/customers.service';
+
+/** Gestión de clientes y condiciones de crédito: lista a la izquierda, condiciones del cliente elegido a la derecha. */
+@Component({
+  selector: 'app-customer-list',
+  templateUrl: './customer-list.page.html',
+  styleUrl: './customer-list.page.scss',
+  imports: [FormsModule, RouterLink, Pager, Badge, ErrorAlert, Icon, SolesPipe, FechaPipe],
+})
+export class CustomerListPage implements OnInit {
+  private readonly customersApi = inject(CustomersService);
+  private readonly reportingApi = inject(ReportingService);
+  private readonly toast = inject(ToastService);
+  readonly initials = initials;
+
+  search = '';
+  status: AccountStatus | '' = '';
+  data = signal<Page<CustomerAccount> | null>(null);
+  stats = signal<Dashboard | null>(null);
+  loading = signal(false);
+  error = signal<string | null>(null);
+
+  selected = signal<CustomerAccount | null>(null);
+  form: UpdateAccount | null = null;
+  saving = signal(false);
+  formError = signal<string | null>(null);
+
+  ngOnInit(): void {
+    this.load(1);
+    this.reportingApi.dashboard().subscribe({ next: (d) => this.stats.set(d), error: () => {} });
+  }
+
+  upcomingTotal(d: Dashboard): number {
+    return d.upcoming.reduce((s, u) => s + Number(u.amount), 0);
+  }
+
+  load(page: number): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.customersApi.listCustomers({ page, size: 8, search: this.search.trim(), status: this.status }).subscribe({
+      next: (d) => {
+        this.loading.set(false);
+        this.data.set(d);
+        const current = this.selected();
+        const first = d.items.find((c) => c.id === current?.id) ?? d.items[0] ?? null;
+        this.select(first);
+      },
+      error: (e) => {
+        this.loading.set(false);
+        this.error.set(parseError(e).message);
+      },
+    });
+  }
+
+  select(c: CustomerAccount | null): void {
+    this.formError.set(null);
+    this.form = c && {
+      first_names: c.first_names, last_names: c.last_names, phone: c.phone, address: c.address,
+      credit_limit: c.credit_limit, cutoff_day: c.cutoff_day, payment_day: c.payment_day,
+      tea: c.tea, late_tea: c.late_tea, max_weeks: c.max_weeks,
+    };
+    this.selected.set(c);
+  }
+
+  cancel(): void {
+    this.select(this.selected());
+  }
+
+  save(): void {
+    const c = this.selected();
+    if (!c || !this.form) return;
+    if (this.form.payment_day <= this.form.cutoff_day) {
+      this.formError.set('El día de pago debe ser posterior al día de corte.');
+      return;
+    }
+    this.saving.set(true);
+    this.formError.set(null);
+    const body: UpdateAccount = {
+      ...this.form,
+      phone: this.form.phone?.trim() || null,
+      address: this.form.address?.trim() || null,
+      credit_limit: String(this.form.credit_limit),
+      tea: String(this.form.tea),
+      late_tea: String(this.form.late_tea),
+    };
+    this.customersApi.updateCustomer(c.id, body).subscribe({
+      next: (a) => {
+        this.saving.set(false);
+        this.data.update((d) => d && { ...d, items: d.items.map((x) => (x.id === a.id ? a : x)) });
+        this.select(a);
+        this.toast.show('Condiciones guardadas.');
+      },
+      error: (e) => {
+        this.saving.set(false);
+        this.formError.set(parseError(e).message);
+      },
+    });
+  }
+}

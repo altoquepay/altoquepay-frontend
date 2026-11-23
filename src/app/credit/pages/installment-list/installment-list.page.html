@@ -1,0 +1,40 @@
+<div class="page-head">
+  <div><h1>Cuotas semanales</h1><p>Ordenadas por fecha de vencimiento. Se pagan en orden dentro de cada compra.</p></div>
+</div>
+<form class="filters" (ngSubmit)="load(1)">
+  <label class="field">Estado
+    <select name="status" [(ngModel)]="status">
+      <option value="">Todas</option><option value="PENDING">Pendientes</option><option value="OVERDUE">Vencidas</option>
+      <option value="PAID">Pagadas</option><option value="CANCELLED">Canceladas</option>
+    </select>
+  </label>
+  <label class="field">Vence hasta<input name="due" type="date" [(ngModel)]="dueBefore" /></label>
+  <button class="btn ghost">Filtrar</button>
+</form>
+<app-error [message]="error()" />
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Vence</th><th>Compra</th><th>Cuenta</th><th>N°</th><th class="right">Interés</th><th class="right">Amortización</th><th class="right">Cuota</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      @for (i of data()?.items ?? []; track $index) {
+        <tr>
+          <td>{{ i.due_date | fecha }}</td>
+          <td><a [routerLink]="['/store/purchases', i.purchase_id]">#{{ i.purchase_id }}</a></td>
+          <td><a [routerLink]="['/store/customers', i.customer_id]">#{{ i.customer_id }}</a></td>
+          <td>{{ i.number }}</td>
+          <td class="num">{{ i.interest | soles }}</td><td class="num">{{ i.amortization | soles }}</td>
+          <td class="num"><strong>{{ i.amount | soles }}</strong></td>
+          <td><app-badge [value]="i.status" /></td>
+          <td class="right">
+            @if (i.id && (i.status === 'PENDING' || i.status === 'OVERDUE')) {
+              <a class="btn sm" routerLink="/store/payments/new"
+                 [queryParams]="{ kind: i.status === 'OVERDUE' || i.due_date <= today ? 'INSTALLMENT' : 'INSTALLMENT_ADVANCE', installment_id: i.id }">
+                {{ i.status === 'OVERDUE' || i.due_date <= today ? 'Cobrar' : 'Adelantar' }}</a>
+            }
+          </td>
+        </tr>
+      } @empty { <tr><td colspan="9" class="empty">{{ loading() ? 'Cargando…' : 'No hay cuotas.' }}</td></tr> }
+    </tbody>
+  </table>
+</div>
+@if (data(); as d) { <app-pager [page]="d.page" [size]="d.size" [total]="d.total" (pageChange)="load($event)" /> }

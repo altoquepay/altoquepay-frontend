@@ -1,0 +1,97 @@
+<app-error [message]="error()" />
+@if (o(); as o) {
+  <div class="page-head">
+    <div><h1>{{ o.business_name }}</h1><p>Tu cuenta: <app-badge [value]="o.account_status" /></p></div>
+    <a class="btn ghost" routerLink="/portal">Mis bodegas</a>
+  </div>
+
+  <div class="grid cols-3" style="margin-bottom: 18px">
+    <div class="stat"><span class="chip-icon"><app-icon name="wallet" /></span><div><div class="label">Crédito disponible</div><div class="value">{{ o.available_credit | soles }}</div><div class="sub">de {{ o.credit_limit | soles }}</div></div></div>
+    <div class="stat"><span class="chip-icon violet"><app-icon name="dollar" /></span><div><div class="label">Deuda (capital)</div><div class="value">{{ o.outstanding_principal | soles }}</div></div></div>
+    <div class="stat"><span class="chip-icon blue"><app-icon name="percent" /></span><div><div class="label">Condiciones</div><div class="value" style="font-size: 1.1rem">TEA {{ o.tea | pct }}</div>
+      <div class="sub">Moratoria {{ o.late_tea | pct }} · corte día {{ o.cutoff_day }}, pago día {{ o.payment_day }} · hasta {{ o.max_weeks }} semanas</div></div></div>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="tab() === 'summary'" (click)="tab.set('summary')">Cuotas pendientes</button>
+    <button [class.active]="tab() === 'purchases'" (click)="openPurchases()">Mis compras</button>
+    <button [class.active]="tab() === 'statement'" (click)="openStatement()">Estado de cuenta</button>
+  </div>
+
+  @switch (tab()) {
+    @case ('summary') {
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Vence</th><th>Compra</th><th>Cuota</th><th class="right">Monto</th><th>Estado</th></tr></thead>
+          <tbody>
+            @for (i of o.installments; track i.installment_id) {
+              <tr><td>{{ i.due_date | fecha }}</td><td>#{{ i.purchase_id }}</td><td>N° {{ i.number }}</td><td class="num">{{ i.amount | soles }}</td><td><app-badge [value]="i.status" /></td></tr>
+            } @empty { <tr><td colspan="5" class="empty">No tienes cuotas pendientes.</td></tr> }
+          </tbody>
+        </table>
+      </div>
+    }
+    @case ('purchases') {
+      <div class="grid" [style.grid-template-columns]="schedule() ? '1fr 1fr' : '1fr'" style="align-items: start">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Fecha</th><th>Modo</th><th class="right">Monto</th><th class="right">Interés</th><th>Estado</th></tr></thead>
+            <tbody>
+              @for (p of purchases(); track p.purchase_id) {
+                <tr class="clickable" (click)="openSchedule(p)">
+                  <td>{{ p.purchased_at | fecha }}</td>
+                  <td>{{ p.mode | label }}{{ p.installments_count ? ' · ' + p.installments_count + ' cuotas' : '' }}</td>
+                  <td class="num">{{ p.amount | soles }}</td><td class="num">{{ p.ordinary_interest | soles }}</td><td><app-badge [value]="p.status" /></td>
+                </tr>
+              } @empty { <tr><td colspan="5" class="empty">Sin compras.</td></tr> }
+            </tbody>
+          </table>
+        </div>
+        @if (schedule(); as s) {
+          <div class="card" style="margin: 0">
+            <div style="display: flex; justify-content: space-between"><h2>Compra #{{ s.purchase.purchase_id }}</h2>
+              <button class="btn sm ghost" (click)="schedule.set(null)">✕</button></div>
+            <dl class="kv">
+              <dt>Fecha</dt><dd>{{ s.purchase.purchased_at | fecha: true }}</dd>
+              <dt>Monto</dt><dd>{{ s.purchase.amount | soles }}</dd>
+              <dt>TEA</dt><dd>{{ s.purchase.tea | pct }}</dd>
+              @if (s.purchase.term_days) { <dt>Plazo</dt><dd>{{ s.purchase.term_days }} días</dd> }
+              @if (s.purchase.installment_amount) { <dt>Cuota</dt><dd>{{ s.purchase.installment_amount | soles }}</dd> }
+              <dt>Interés</dt><dd>{{ s.purchase.ordinary_interest | soles }}</dd>
+            </dl>
+            <h3 style="margin-top: 14px">Cuotas pendientes</h3>
+            <table>
+              <tbody>
+                @for (i of s.installments; track i.installment_id) {
+                  <tr><td>N° {{ i.number }}</td><td>{{ i.due_date | fecha }}</td><td class="num">{{ i.amount | soles }}</td><td><app-badge [value]="i.status" /></td></tr>
+                } @empty { <tr><td class="empty">Nada pendiente.</td></tr> }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+    @case ('statement') {
+      <div class="filters">
+        <label class="field">Mes
+          <select [(ngModel)]="month" (ngModelChange)="loadStatement()">
+            @for (m of months; track $index) { <option [ngValue]="$index + 1">{{ m }}</option> }
+          </select>
+        </label>
+        <label class="field">Año<input type="number" min="2000" max="2100" [(ngModel)]="year" (change)="loadStatement()" style="min-width: 100px" /></label>
+      </div>
+      @if (statement(); as st) {
+        <div class="card" style="max-width: 520px">
+          <h2>{{ st.month | mes: st.year }} <app-badge [value]="st.status" /></h2>
+          <p class="muted small">Corte {{ st.cutoff_date | fecha }} · pagar hasta el {{ st.payment_date | fecha }}</p>
+          <div class="total-line"><span>Capital</span><span class="num">{{ st.capital | soles }}</span></div>
+          <div class="total-line"><span>Interés ordinario</span><span class="num">{{ st.ordinary_interest | soles }}</span></div>
+          <div class="total-line"><span>Interés moratorio (hasta hoy)</span><span class="num">{{ st.late_interest | soles }}</span></div>
+          <div class="total-line big"><span>Total</span><span class="num">{{ st.total | soles }}</span></div>
+        </div>
+      } @else {
+        <p class="muted">{{ statementMsg() }}</p>
+      }
+    }
+  }
+}

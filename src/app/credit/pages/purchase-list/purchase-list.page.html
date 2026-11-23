@@ -1,0 +1,34 @@
+<div class="page-head">
+  <div><h1>Compras al crédito</h1><p>Las más recientes primero. Las fechas son días en Lima.</p></div>
+  <a class="btn" routerLink="/store/purchases/new">＋ Nueva venta</a>
+</div>
+<form class="filters" (ngSubmit)="load(1)">
+  <label class="field">Modo
+    <select name="mode" [(ngModel)]="mode">
+      <option value="">Todos</option><option value="SINGLE_DATE">Fecha única</option><option value="WEEKLY">Semanal</option>
+    </select>
+  </label>
+  <label class="field">Desde<input name="from" type="date" [(ngModel)]="from" /></label>
+  <label class="field">Hasta<input name="to" type="date" [(ngModel)]="to" /></label>
+  <label class="field">ID de cuenta<input name="cid" type="number" [(ngModel)]="customerId" placeholder="Todas" style="min-width: 110px" /></label>
+  <button class="btn ghost">Filtrar</button>
+</form>
+<app-error [message]="error()" />
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>#</th><th>Fecha</th><th>Cuenta</th><th>Modo</th><th>TEA</th><th class="right">Monto</th><th class="right">Interés</th><th class="right">Total</th><th>Estado</th></tr></thead>
+    <tbody>
+      @for (p of data()?.items ?? []; track p.id) {
+        <tr class="clickable" (click)="router.navigate(['/store/purchases', p.id])">
+          <td>{{ p.id }}</td><td>{{ p.purchased_at | fecha: true }}</td>
+          <td><a [routerLink]="['/store/customers', p.customer_id]" (click)="$event.stopPropagation()">#{{ p.customer_id }}</a></td>
+          <td>{{ p.mode | label }}{{ p.installments_count ? ' · ' + p.installments_count + ' cuotas' : '' }}</td>
+          <td>{{ p.tea | pct }}</td>
+          <td class="num">{{ p.amount | soles }}</td><td class="num">{{ p.ordinary_interest | soles }}</td><td class="num"><strong>{{ p.total | soles }}</strong></td>
+          <td><app-badge [value]="p.status" /></td>
+        </tr>
+      } @empty { <tr><td colspan="9" class="empty">{{ loading() ? 'Cargando…' : 'No hay compras.' }}</td></tr> }
+    </tbody>
+  </table>
+</div>
+@if (data(); as d) { <app-pager [page]="d.page" [size]="d.size" [total]="d.total" (pageChange)="load($event)" /> }

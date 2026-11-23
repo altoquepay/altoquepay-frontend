@@ -1,0 +1,47 @@
+<div class="page-head">
+  <div>
+    <h1>{{ product() ? product()!.description : 'Nuevo producto' }}</h1>
+    @if (product(); as p) { <p>Código <span class="mono">{{ p.code }}</span> · <app-badge [value]="p.is_active ? 'ACTIVE' : 'INACTIVE'" /></p> }
+  </div>
+  <div class="actions">
+    @if (product()?.is_active) {
+      <button class="btn outline-danger" (click)="deactivate()" [disabled]="busy()">Dejar de vender</button>
+    }
+    <a class="btn ghost" routerLink="/store/products">Volver</a>
+  </div>
+</div>
+<app-error [message]="error()" />
+<div class="grid" [style.grid-template-columns]="product() ? '1fr 240px' : '1fr'">
+  <form class="card form" (ngSubmit)="save()" #f="ngForm">
+    <div class="form-row">
+      <label class="field">Código<input name="code" [(ngModel)]="m.code" required maxlength="30" /></label>
+      <label class="field">Unidad <small>ej. UND, KG, PAQ</small><input name="unit" [(ngModel)]="m.unit" required maxlength="20" /></label>
+    </div>
+    <label class="field">Descripción<input name="description" [(ngModel)]="m.description" required maxlength="200" /></label>
+    <div class="form-row">
+      <label class="field">Marca<input name="brand" [(ngModel)]="m.brand" required maxlength="100" /></label>
+      <label class="field">Categoría<input name="category" [(ngModel)]="m.category" required maxlength="100" /></label>
+      <label class="field">Proveedor<input name="supplier" [(ngModel)]="m.supplier" maxlength="100" /></label>
+    </div>
+    <div class="form-row">
+      <label class="field">Precio al contado (S/)<input name="cash" inputmode="decimal" [(ngModel)]="m.cash_price" required pattern="^\d+(\.\d{1,2})?$" /></label>
+      <label class="field">Precio de lista (S/) <small>el que se usa al crédito</small><input name="list" inputmode="decimal" [(ngModel)]="m.list_price" required pattern="^\d+(\.\d{1,2})?$" /></label>
+    </div>
+    @if (product()) {
+      <p class="muted small" style="margin: 0">Las compras ya registradas conservan el precio que copiaron.</p>
+    }
+    <div class="actions"><button class="btn" [disabled]="busy() || f.invalid">{{ product() ? 'Guardar cambios' : 'Crear producto' }}</button></div>
+  </form>
+  @if (product(); as p) {
+    <div class="card" style="text-align: center">
+      <h3>Imagen</h3>
+      @if (productsApi.imageUrl(p.image_url); as src) { <img class="product-img" [src]="src" alt="" /> }
+      @else { <div class="product-img muted" style="display: grid; place-items: center; margin: 0 auto">Sin imagen</div> }
+      <label class="btn ghost sm" style="margin-top: 12px">
+        {{ uploading() ? 'Subiendo…' : 'Subir imagen' }}
+        <input type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="upload($event)" />
+      </label>
+      <p class="muted small">JPEG, PNG o WebP de hasta 2 MB.</p>
+    </div>
+  }
+</div>

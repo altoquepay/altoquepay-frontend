@@ -1,0 +1,16 @@
+<div class="page-head">
+  <div><h1>Bodega de confianza</h1><p>Resuelve bloqueos de acceso (STORE_NOT_TRUSTED) de un cliente.</p></div>
+</div>
+<div class="alert info" style="max-width: 640px">
+  Confirma primero con el cliente. Después de esto, solo la bodega elegida podrá restaurar su acceso; sus otras bodegas salen del portal
+  y el cliente las vuelve a vincular con un código nuevo de cada una.
+</div>
+<form class="card form" style="max-width: 640px" (ngSubmit)="save()" #f="ngForm">
+  <app-error [message]="error()" />
+  @if (done()) { <div class="alert success">Listo. Pide a esa bodega que genere un código de acceso nuevo para el cliente.</div> }
+  <div class="form-row">
+    <label class="field">DNI del cliente<input name="dni" [(ngModel)]="dni" required pattern="\d{8}" maxlength="8" inputmode="numeric" /></label>
+    <label class="field">ID de la bodega <small>ver lista de bodegas</small><input name="store" type="number" min="1" [(ngModel)]="storeId" required /></label>
+  </div>
+  <div class="actions"><button class="btn" [disabled]="saving() || f.invalid">Fijar bodega de confianza</button></div>
+</form>

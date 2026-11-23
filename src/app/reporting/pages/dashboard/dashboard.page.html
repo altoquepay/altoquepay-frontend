@@ -1,0 +1,105 @@
+<div class="page-head">
+  <div>
+    <h1>Panel principal</h1>
+    <p>Resumen general de tu negocio.</p>
+  </div>
+  <span class="date-chip"><app-icon name="calendar" [size]="17" /> {{ today }}</span>
+</div>
+<app-error [message]="error()" />
+
+@if (d(); as d) {
+  @if (!d.bcrp_cap) {
+    <div class="alert warn"><app-icon name="alert" [size]="18" />
+      <span>No hay un tope BCRP vigente: no podrás registrar compras hasta que soporte lo registre.</span></div>
+  }
+
+  <div class="grid cols-4">
+    <div class="stat tint-blue upper">
+      <span class="chip-icon blue"><app-icon name="users" /></span>
+      <div><div class="label">Clientes activos</div><div class="value">{{ d.active_customers }}</div>
+        <div class="sub">con crédito en tu bodega</div></div>
+    </div>
+    <div class="stat tint-green upper">
+      <span class="chip-icon green"><app-icon name="file" /></span>
+      <div><div class="label">Créditos del mes</div><div class="value">{{ d.purchases_this_month.count }}</div>
+        <div class="sub">{{ d.purchases_this_month.amount | soles }} vendidos</div></div>
+    </div>
+    <div class="stat tint-yellow upper">
+      <span class="chip-icon yellow"><app-icon name="card" /></span>
+      <div><div class="label">Por cobrar</div><div class="value">{{ d.outstanding_principal | soles }}</div>
+        <div class="sub">capital pendiente</div></div>
+    </div>
+    <div class="stat tint-red upper">
+      <span class="chip-icon red"><app-icon name="alert" /></span>
+      <div><div class="label">Pagos vencidos</div><div class="value">{{ d.overdue_installments + d.overdue_statements }}</div>
+        <div class="sub">{{ d.overdue_amount | soles }} en mora</div></div>
+    </div>
+  </div>
+
+  <div class="grid main-aside" style="margin-top: 18px">
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">
+          <span class="chip-icon sm"><app-icon name="calendar" [size]="18" /></span>
+          <div><h2>Próximos vencimientos</h2><p>Clientes con pagos en los próximos 7 días.</p></div>
+        </div>
+        <a routerLink="/store/payments">Ver todos →</a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Cliente</th><th>Fecha de pago</th><th>Tipo</th><th class="right">Monto</th><th>Estado</th></tr></thead>
+          <tbody>
+            @for (u of d.upcoming; track $index) {
+              <tr>
+                <td><a [routerLink]="['/store/customers', u.account_id]">{{ u.customer_name }}</a></td>
+                <td>{{ u.due_date | fecha }}</td>
+                <td class="muted">{{ u.type === 'CYCLE' ? 'Estado de cuenta' : 'Cuota semanal' }}</td>
+                <td class="num strong">{{ u.amount | soles }}</td>
+                <td>
+                  @if (isSoon(u.due_date)) { <app-badge value="OPEN" label="Próxima" tone="info" /> }
+                  @else { <app-badge value="PENDING" /> }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="empty">Nada vence en los próximos 7 días.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (d.next_cutoff) {
+        <p class="muted small" style="margin: 14px 0 0">Próximo corte: <strong>{{ d.next_cutoff | fecha }}</strong>
+          @if (d.bcrp_cap) { · Tope BCRP vigente: <strong>{{ d.bcrp_cap.max_tea | pct }}</strong> TEA }</p>
+      }
+    </section>
+
+    <div class="stack">
+      <section class="card">
+        <div class="card-title" style="margin-bottom: 16px">
+          <span class="chip-icon sm"><app-icon name="bolt" [size]="18" /></span>
+          <div><h2>Accesos rápidos</h2><p class="muted small" style="margin: 0">Tus operaciones más comunes.</p></div>
+        </div>
+        <div class="stack" style="gap: 10px">
+          <a class="btn block" routerLink="/store/purchases/new"><app-icon name="cart" [size]="18" /> Registrar compra</a>
+          <a class="btn outline block" routerLink="/store/payments"><app-icon name="cash" [size]="18" /> Registrar pago</a>
+          <a class="btn outline block" routerLink="/store/customers/new"><app-icon name="user-plus" [size]="18" /> Nuevo cliente</a>
+        </div>
+      </section>
+      <section class="card">
+        <div class="card-title" style="margin-bottom: 14px">
+          <span class="chip-icon sm red"><app-icon name="bell" [size]="18" /></span>
+          <div><h2>Alerta</h2><p class="muted small" style="margin: 0">Situaciones que requieren tu atención.</p></div>
+        </div>
+        @if (d.overdue_installments + d.overdue_statements > 0) {
+          <a class="alert-link" routerLink="/store/payments">
+            <span><app-icon name="alert-circle" [size]="18" /> {{ d.overdue_installments + d.overdue_statements }} pagos vencidos requieren seguimiento.</span>
+            <app-icon name="chevron-right" [size]="18" />
+          </a>
+        } @else {
+          <div class="alert success" style="margin: 0"><app-icon name="check-circle" [size]="18" /><span>No tienes pagos vencidos.</span></div>
+        }
+      </section>
+    </div>
+  </div>
+} @else if (!error()) {
+  <p class="muted">Cargando…</p>
+}
