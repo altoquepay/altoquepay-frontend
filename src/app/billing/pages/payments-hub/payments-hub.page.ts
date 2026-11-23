@@ -107,15 +107,12 @@ export class PaymentsHubPage implements OnInit {
     this.error.set(null);
     this.page.set(page);
     if (this.tab() === 'installments') {
-      const status: InstallmentStatus = this.filter() === 'OVERDUE' ? 'OVERDUE' : 'PENDING';
       // "Todas" muestra primero las vencidas y luego las pendientes de la página pedida.
-      const reqs = this.filter() === ''
-        ? forkJoin([
-            this.purchasesApi.listInstallments({ page, size: this.size, status: 'OVERDUE' }),
-            this.purchasesApi.listInstallments({ page, size: this.size, status: 'PENDING' }),
-          ])
-        : forkJoin([this.purchasesApi.listInstallments({ page, size: this.size, status })]);
-      reqs.subscribe({
+      const statuses: InstallmentStatus[] =
+        this.filter() === '' ? ['OVERDUE', 'PENDING'] : [this.filter() as InstallmentStatus];
+      forkJoin(
+        statuses.map((status) => this.purchasesApi.listInstallments({ page, size: this.size, status })),
+      ).subscribe({
         next: (pages) => {
           const items = pages.flatMap((p) => p.items);
           this.total.set(Math.max(...pages.map((p) => p.total)));
