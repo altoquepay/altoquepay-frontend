@@ -1,0 +1,44 @@
+<div class="page-head">
+  <div><h1>Historial de pagos</h1><p>Pagos registrados, los más recientes primero.</p></div>
+  <div class="actions">
+    <a class="btn outline" routerLink="/store/payments">Gestión de pagos y mora</a>
+    <a class="btn" routerLink="/store/payments/new">Cobrar por ID</a>
+  </div>
+</div>
+<form class="filters" (ngSubmit)="load(1)">
+  <label class="field">Tipo
+    <select name="kind" [(ngModel)]="kind">
+      <option value="">Todos</option>
+      <option value="CYCLE_STATEMENT">Estado de cuenta</option><option value="INSTALLMENT">Cuota</option>
+      <option value="INSTALLMENT_ADVANCE">Adelanto de cuota</option><option value="SINGLE_DATE_EARLY">Fecha única anticipada</option>
+      <option value="FULL_PREPAYMENT">Prepago total</option>
+    </select>
+  </label>
+  <label class="field">Desde<input name="from" type="date" [(ngModel)]="from" /></label>
+  <label class="field">Hasta<input name="to" type="date" [(ngModel)]="to" /></label>
+  <label class="field">ID de cuenta<input name="cid" type="number" [(ngModel)]="customerId" placeholder="Todas" style="min-width: 110px" /></label>
+  <button class="btn ghost">Filtrar</button>
+</form>
+<app-error [message]="error()" />
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>#</th><th>Fecha</th><th>Cuenta</th><th>Tipo</th><th>Aplicado a</th><th class="right">Mora</th><th class="right">Interés</th><th class="right">Capital</th><th class="right">Total</th><th class="right">Ahorro</th></tr></thead>
+    <tbody>
+      @for (p of data()?.items ?? []; track p.id) {
+        <tr>
+          <td>{{ p.id }}</td><td>{{ p.paid_on | fecha }}</td>
+          <td><a [routerLink]="['/store/customers', p.customer_id]">#{{ p.customer_id }}</a></td>
+          <td>{{ p.kind | label }}</td>
+          <td>
+            @if (p.purchase_id) { <a [routerLink]="['/store/purchases', p.purchase_id]">Compra #{{ p.purchase_id }}</a> }
+            @else if (p.installment_id) { Cuota #{{ p.installment_id }} }
+            @else if (p.cycle_id) { Ciclo #{{ p.cycle_id }} }
+          </td>
+          <td class="num">{{ p.late_interest | soles }}</td><td class="num">{{ p.ordinary_interest | soles }}</td>
+          <td class="num">{{ p.principal | soles }}</td><td class="num"><strong>{{ p.total | soles }}</strong></td><td class="num">{{ p.savings | soles }}</td>
+        </tr>
+      } @empty { <tr><td colspan="10" class="empty">{{ loading() ? 'Cargando…' : 'No hay pagos.' }}</td></tr> }
+    </tbody>
+  </table>
+</div>
+@if (data(); as d) { <app-pager [page]="d.page" [size]="d.size" [total]="d.total" (pageChange)="load($event)" /> }

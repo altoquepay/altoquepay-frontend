@@ -1,0 +1,130 @@
+<div class="page-head">
+  <div>
+    <h1>Gestión de pagos y mora</h1>
+    <p>Controla pagos pendientes, atrasos e intereses moratorios.</p>
+  </div>
+  <div class="actions">
+    <span class="date-chip"><app-icon name="calendar" [size]="17" /> {{ todayText }}</span>
+    <a class="btn outline" routerLink="/store/payments/history"><app-icon name="receipt" [size]="17" /> Historial de pagos</a>
+  </div>
+</div>
+
+<div class="grid cols-4" style="margin-bottom: 18px">
+  <div class="stat">
+    <span class="chip-icon blue"><app-icon name="file" /></span>
+    <div><div class="label">Por cobrar</div><div class="value">{{ stats() ? (stats()!.outstanding_principal | soles) : '—' }}</div>
+      <div class="sub">capital pendiente</div></div>
+  </div>
+  <div class="stat">
+    <span class="chip-icon red"><app-icon name="clock" /></span>
+    <div><div class="label">Pagos vencidos</div><div class="value">{{ stats() ? (stats()!.overdue_amount | soles) : '—' }}</div>
+      <div class="sub">{{ stats()?.overdue_installments ?? 0 }} cuotas y {{ stats()?.overdue_statements ?? 0 }} estados en mora</div></div>
+  </div>
+  <div class="stat">
+    <span class="chip-icon green"><app-icon name="percent" /></span>
+    <div><div class="label">Interés moratorio cobrado</div><div class="value">{{ stats() ? (stats()!.payments_this_month.late_interest | soles) : '—' }}</div>
+      <div class="sub">en el mes</div></div>
+  </div>
+  <div class="stat">
+    <span class="chip-icon"><app-icon name="trend" /></span>
+    <div><div class="label">Cobrado hoy</div><div class="value">{{ collectedToday() ? (collectedToday()!.total | soles) : '—' }}</div>
+      <div class="sub">{{ collectedToday()?.count ?? 0 }} pagos registrados</div></div>
+  </div>
+</div>
+
+<div class="grid" [class.with-detail]="!!selected()">
+  <section class="card">
+    <div class="card-head">
+      <h2>Obligaciones de clientes</h2>
+      <div class="segmented" role="tablist" aria-label="Estado">
+        <button type="button" [class.active]="filter() === ''" (click)="setFilter('')">Todas</button>
+        <button type="button" [class.active]="filter() === 'OVERDUE'" (click)="setFilter('OVERDUE')">Vencidas</button>
+        <button type="button" [class.active]="filter() === 'PENDING'" (click)="setFilter('PENDING')">{{ tab() === 'cycles' ? 'Por pagar' : 'Pendientes' }}</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button type="button" [class.active]="tab() === 'installments'" (click)="setTab('installments')">Cuotas semanales</button>
+      <button type="button" [class.active]="tab() === 'cycles'" (click)="setTab('cycles')">Estados de cuenta</button>
+    </div>
+    <app-error [message]="error()" />
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Cliente</th><th>Obligación</th><th class="right">Monto</th><th>Vencimiento</th><th class="center">Días de mora</th><th>Estado</th><th class="right">Acción</th></tr>
+        </thead>
+        <tbody>
+          @for (r of rows(); track r.key) {
+            <tr class="clickable" [class.selected]="selected()?.key === r.key" (click)="open(r)">
+              <td>
+                <strong class="nowrap">{{ customerName(r.customerId) }}</strong>
+                <div class="small muted">DNI {{ customers()[r.customerId]?.dni ?? '—' }}</div>
+              </td>
+              <td class="nowrap">{{ r.title }}<div class="small muted">{{ r.detail }}</div></td>
+              <td class="num">{{ r.amount | soles }}</td>
+              <td class="nowrap">{{ r.dueDate | fecha }}</td>
+              <td class="center"><span class="days-late" [class.zero]="daysLate(r) === 0">{{ daysLate(r) }}</span></td>
+              <td><app-badge [value]="r.status" [label]="r.status === 'CLOSED' ? 'Por pagar' : null" /></td>
+              <td class="right"><button type="button" class="btn sm" (click)="$event.stopPropagation(); open(r)">Cobrar</button></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7" class="empty">{{ loading() ? 'Cargando…' : 'No hay obligaciones por cobrar.' }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-pager [page]="page()" [size]="size" [total]="total()" (pageChange)="load($event)" />
+    <p class="muted small" style="margin: 10px 0 0">
+      ¿Buscas cuotas pagadas o ciclos abiertos? Míralos en <a routerLink="/store/installments">Cuotas</a> y <a routerLink="/store/cycles">Ciclos</a>.
+    </p>
+  </section>
+
+  @if (selected(); as r) {
+    <aside class="card detail">
+      <div class="card-head" style="margin-bottom: 14px">
+        <h2>Detalle del pago</h2>
+        <button type="button" class="icon-btn" (click)="closeDetail()" aria-label="Cerrar detalle"><app-icon name="x" [size]="18" /></button>
+      </div>
+      @let c = selectedCustomer();
+      <div class="person">
+        <span class="avatar">{{ initials(customerName(r.customerId)) }}</span>
+        <div><strong>{{ customerName(r.customerId) }}</strong><small>DNI {{ c?.dni ?? '—' }}</small></div>
+        @if (c?.phone) {
+          <a class="icon-btn bordered" [href]="'tel:' + c!.phone" aria-label="Llamar al cliente"><app-icon name="phone" [size]="17" /></a>
+        }
+      </div>
+      <dl class="kv">
+        <dt>Obligación</dt>
+        <dd>
+          @if (r.purchaseId) { <a [routerLink]="['/store/purchases', r.purchaseId]">{{ r.title }}</a> · {{ r.detail }} }
+          @else { {{ r.title }} {{ r.detail }} }
+        </dd>
+        <dt>Modalidad de pago</dt><dd>{{ r.type === 'CYCLE' ? 'Fecha determinada' : 'Cuotas semanales' }}</dd>
+        @if (c) {
+          <dt>TEA</dt><dd>{{ c.tea | pct }}</dd>
+          <dt>Tasa moratoria</dt><dd>{{ c.late_tea | pct }}</dd>
+        }
+        <dt>Fecha de vencimiento</dt><dd>{{ r.dueDate | fecha }}</dd>
+        @if (quote(); as q) {
+          <dt>Días de atraso</dt><dd [class.text-bad]="q.days_late > 0">{{ q.days_late }} días</dd>
+          <dt>Capital</dt><dd>{{ q.principal | soles }}</dd>
+          <dt>Interés ordinario</dt><dd>{{ q.ordinary_interest | soles }}</dd>
+          <dt>Interés moratorio</dt><dd>{{ q.late_interest | soles }}</dd>
+          @if (positive(q.savings)) {
+            <dt>Ahorro por adelantar</dt><dd class="text-ok">{{ q.savings | soles }}</dd>
+          }
+        }
+      </dl>
+      <app-error [message]="quoteError()" />
+      @if (quote(); as q) {
+        <div class="total-box"><span>Total a pagar hoy</span><span class="value">{{ q.total | soles }}</span></div>
+        <button class="btn block" (click)="register()" [disabled]="paying()"><app-icon name="cash" [size]="18" /> {{ paying() ? 'Registrando…' : 'Registrar pago' }}</button>
+      } @else if (quoting()) {
+        <p class="muted">Calculando lo que corresponde pagar hoy…</p>
+      }
+      @if (reminderLink(); as link) {
+        <a class="btn outline block" style="margin-top: 10px" [href]="link" target="_blank" rel="noopener">
+          <app-icon name="send" [size]="17" /> Enviar recordatorio por WhatsApp</a>
+      }
+    </aside>
+  }
+</div>

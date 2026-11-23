@@ -1,0 +1,42 @@
+<app-error [message]="error()" />
+@if (s(); as s) {
+  <div class="page-head">
+    <div>
+      <h1>Estado de cuenta · {{ s.month | mes: s.year }}</h1>
+      <p>Corte {{ s.cutoff_date | fecha }} · pago {{ s.payment_date | fecha }} · <app-badge [value]="s.status" /></p>
+    </div>
+    <div class="actions">
+      @if (s.status === 'CLOSED' || s.status === 'OVERDUE') {
+        <a class="btn" routerLink="/store/payments/new" [queryParams]="{ kind: 'CYCLE_STATEMENT', cycle_id: s.cycle_id }">Cobrar estado de cuenta</a>
+      }
+      <button class="btn ghost" (click)="pdf()" [disabled]="downloading()">Descargar PDF</button>
+      <a class="btn ghost" [routerLink]="['/store/customers', s.customer_id]">Ver cliente</a>
+    </div>
+  </div>
+  @if (s.status === 'OPEN') {
+    <div class="alert info">El ciclo sigue abierto. Sus compras de fecha única se pueden pagar por adelantado desde el detalle de cada compra.</div>
+  }
+  <div class="grid cols-2">
+    <div class="card">
+      <h2>Resumen</h2>
+      <div class="total-line"><span>Capital</span><span class="num">{{ s.capital | soles }}</span></div>
+      <div class="total-line"><span>Interés ordinario</span><span class="num">{{ s.ordinary_interest | soles }}</span></div>
+      <div class="total-line"><span>Interés moratorio (hasta hoy)</span><span class="num">{{ s.late_interest | soles }}</span></div>
+      <div class="total-line big"><span>Total</span><span class="num">{{ s.total | soles }}</span></div>
+    </div>
+    <div class="card">
+      <h2>Compras del ciclo</h2>
+      <table>
+        <thead><tr><th>#</th><th>Fecha</th><th>Modo</th><th class="right">Monto</th><th class="right">Interés</th><th>Estado</th></tr></thead>
+        <tbody>
+          @for (p of s.purchases; track p.purchase_id) {
+            <tr class="clickable" [routerLink]="['/store/purchases', p.purchase_id]">
+              <td>{{ p.purchase_id }}</td><td>{{ p.purchased_at | fecha }}</td><td>{{ p.mode | label }}</td>
+              <td class="num">{{ p.amount | soles }}</td><td class="num">{{ p.ordinary_interest | soles }}</td><td><app-badge [value]="p.status" /></td>
+            </tr>
+          } @empty { <tr><td colspan="6" class="empty">Sin compras en este ciclo.</td></tr> }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

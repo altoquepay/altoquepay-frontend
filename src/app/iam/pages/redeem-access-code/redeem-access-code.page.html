@@ -1,0 +1,27 @@
+<app-auth-layout>
+  <h2>Activa tu acceso</h2>
+  <p class="lead">Usa el código de 12 caracteres que te dio tu bodega. Vale 48 horas y una sola vez.</p>
+  @if (done()) {
+    <div class="alert success">¡Listo! Ahora inicia sesión con tu DNI y la contraseña que elegiste.</div>
+    <a class="btn block lg" routerLink="/login">Iniciar sesión</a>
+  } @else {
+    <app-error [message]="error()" />
+    <form class="form" (ngSubmit)="submit()" #f="ngForm">
+      <label class="field">DNI
+        <span class="input-icon"><app-icon name="user" [size]="18" /><input name="dni" [(ngModel)]="dni" required pattern="\d{8}" maxlength="8" inputmode="numeric" placeholder="12345678" /></span>
+      </label>
+      <label class="field">Código de acceso
+        <span class="input-icon"><app-icon name="key" [size]="18" /><input name="code" class="mono" [(ngModel)]="code" required maxlength="20" style="text-transform: uppercase; letter-spacing: 0.1em" placeholder="ABCD EFGH JKLM" /></span>
+      </label>
+      <label class="field">Elige tu contraseña <small>8 a 128 caracteres</small>
+        <span class="input-icon"><app-icon name="lock" [size]="18" /><input name="p1" type="password" [(ngModel)]="p1" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="••••••••" /></span>
+      </label>
+      <label class="field">Repite la contraseña
+        <span class="input-icon"><app-icon name="lock" [size]="18" /><input name="p2" type="password" [(ngModel)]="p2" required autocomplete="new-password" placeholder="••••••••" /></span>
+      </label>
+      <button class="btn block lg" [disabled]="loading() || f.invalid">Activar</button>
+    </form>
+    <p class="muted small">Al canjearlo, esa bodega queda en tu portal y las demás se desvinculan; puedes volver a agregarlas con sus códigos desde tu portal.</p>
+  }
+  <div class="auth-foot"><a routerLink="/login">Volver al inicio de sesión</a></div>
+</app-auth-layout>

@@ -1,0 +1,10 @@
+<div class="access-code">
+  <div class="muted">Código de acceso para {{ who() }}</div>
+  <div class="code">{{ formatted() }}</div>
+  <div class="small">Vence el {{ code().expires_at | fecha: true }} · un solo uso</div>
+  <p class="small muted" style="margin: 10px 0 0">
+    Este código se muestra solo esta vez. El cliente debe entrar a <strong>Activar acceso</strong>,
+    escribir su DNI, este código y elegir su contraseña. Si ya tiene sesión, lo agrega desde su portal.
+  </p>
+  <button type="button" class="btn sm ghost" style="margin-top: 10px" (click)="copy()">Copiar código</button>
+</div>

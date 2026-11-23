@@ -1,0 +1,115 @@
+<app-error [message]="error()" />
+@if (acc(); as a) {
+  <div class="page-head">
+    <div>
+      <h1>{{ a.first_names }} {{ a.last_names }}</h1>
+      <p>DNI <span class="mono">{{ a.dni }}</span> · cliente desde {{ a.created_at | fecha }} · <app-badge [value]="a.status" /></p>
+    </div>
+    <div class="actions">
+      @if (a.status === 'ACTIVE') {
+        <a class="btn" routerLink="/store/purchases/new" [queryParams]="{ customer: a.id }">＋ Nueva venta</a>
+      }
+      <button class="btn ghost" (click)="newCode()" [disabled]="busy()">Generar código de acceso</button>
+      @if (a.status === 'ACTIVE') {
+        <button class="btn outline-danger" (click)="deactivate()" [disabled]="busy()">Desactivar</button>
+      }
+      <a class="btn ghost" routerLink="/store/customers">Volver</a>
+    </div>
+  </div>
+
+  @if (!a.portal_linked) {
+    <div class="alert warn">El cliente todavía no canjeó un código de esta bodega: no ve esta cuenta en su portal.</div>
+  }
+  @if (code(); as c) {
+    <div class="card"><app-access-code [code]="c" [who]="a.first_names" /></div>
+  }
+
+  <div class="grid cols-4" style="margin-bottom: 18px">
+    <div class="stat"><span class="chip-icon"><app-icon name="wallet" /></span><div><div class="label">Límite de crédito</div><div class="value">{{ a.credit_limit | soles }}</div></div></div>
+    <div class="stat"><span class="chip-icon violet"><app-icon name="percent" /></span><div><div class="label">TEA / moratoria</div><div class="value" style="font-size: 1.25rem">{{ a.tea | pct }} / {{ a.late_tea | pct }}</div></div></div>
+    <div class="stat"><span class="chip-icon blue"><app-icon name="calendar" /></span><div><div class="label">Corte / pago</div><div class="value" style="font-size: 1.25rem">Día {{ a.cutoff_day }} / {{ a.payment_day }}</div></div></div>
+    <div class="stat"><span class="chip-icon green"><app-icon name="box" /></span><div><div class="label">Semanas máx.</div><div class="value">{{ a.max_weeks }}</div>
+      <div class="sub">{{ a.phone || 'Sin teléfono' }}</div></div></div>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="tab() === 'purchases'" (click)="setTab('purchases')">Compras</button>
+    <button [class.active]="tab() === 'cycles'" (click)="setTab('cycles')">Estados de cuenta</button>
+    <button [class.active]="tab() === 'payments'" (click)="setTab('payments')">Pagos</button>
+    <button [class.active]="tab() === 'edit'" (click)="setTab('edit')">Editar datos</button>
+  </div>
+
+  @switch (tab()) {
+    @case ('purchases') {
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Fecha</th><th>Modo</th><th class="right">Monto</th><th class="right">Total</th><th>Estado</th></tr></thead>
+          <tbody>
+            @for (p of purchases()?.items ?? []; track p.id) {
+              <tr class="clickable" [routerLink]="['/store/purchases', p.id]">
+                <td>{{ p.id }}</td><td>{{ p.purchased_at | fecha: true }}</td><td>{{ p.mode | label }}{{ p.installments_count ? ' · ' + p.installments_count + ' cuotas' : '' }}</td>
+                <td class="num">{{ p.amount | soles }}</td><td class="num">{{ p.total | soles }}</td><td><app-badge [value]="p.status" /></td>
+              </tr>
+            } @empty { <tr><td colspan="6" class="empty">Sin compras.</td></tr> }
+          </tbody>
+        </table>
+      </div>
+      @if (purchases(); as d) { <app-pager [page]="d.page" [size]="d.size" [total]="d.total" (pageChange)="loadPurchases($event)" /> }
+    }
+    @case ('cycles') {
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Período</th><th>Corte</th><th>Pago</th><th class="right">Total</th><th>Estado</th><th></th></tr></thead>
+          <tbody>
+            @for (c of cycles()?.items ?? []; track c.id) {
+              <tr>
+                <td>{{ c.month | mes: c.year }}</td><td>{{ c.cutoff_date | fecha }}</td><td>{{ c.payment_date | fecha }}</td>
+                <td class="num">{{ c.total | soles }}</td><td><app-badge [value]="c.status" /></td>
+                <td class="right"><a class="btn sm ghost" [routerLink]="['/store/customers', a.id, 'cycles', c.year, c.month]">Ver</a></td>
+              </tr>
+            } @empty { <tr><td colspan="6" class="empty">Sin ciclos.</td></tr> }
+          </tbody>
+        </table>
+      </div>
+      @if (cycles(); as d) { <app-pager [page]="d.page" [size]="d.size" [total]="d.total" (pageChange)="loadCycles($event)" /> }
+    }
+    @case ('payments') {
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>Tipo</th><th class="right">Capital</th><th class="right">Interés</th><th class="right">Mora</th><th class="right">Total</th></tr></thead>
+          <tbody>
+            @for (p of payments()?.items ?? []; track p.id) {
+              <tr><td>{{ p.paid_on | fecha }}</td><td>{{ p.kind | label }}</td><td class="num">{{ p.principal | soles }}</td>
+                <td class="num">{{ p.ordinary_interest | soles }}</td><td class="num">{{ p.late_interest | soles }}</td><td class="num"><strong>{{ p.total | soles }}</strong></td></tr>
+            } @empty { <tr><td colspan="6" class="empty">Sin pagos.</td></tr> }
+          </tbody>
+        </table>
+      </div>
+      @if (payments(); as d) { <app-pager [page]="d.page" [size]="d.size" [total]="d.total" (pageChange)="loadPayments($event)" /> }
+    }
+    @case ('edit') {
+      <form class="card form" (ngSubmit)="save()" #f="ngForm">
+        <p class="muted small" style="margin: 0">El DNI no cambia. Nombres, teléfono y dirección solo los ve tu bodega.</p>
+        <div class="form-row">
+          <label class="field">Nombres<input name="first" [(ngModel)]="m.first_names" required maxlength="100" /></label>
+          <label class="field">Apellidos<input name="last" [(ngModel)]="m.last_names" required maxlength="100" /></label>
+        </div>
+        <div class="form-row">
+          <label class="field">Teléfono<input name="phone" [(ngModel)]="m.phone" maxlength="20" /></label>
+          <label class="field">Dirección<input name="address" [(ngModel)]="m.address" maxlength="200" /></label>
+        </div>
+        <div class="form-row">
+          <label class="field">Límite (S/)<input name="limit" inputmode="decimal" [(ngModel)]="m.credit_limit" required /></label>
+          <label class="field">Día de corte<input name="cutoff" type="number" min="1" max="25" [(ngModel)]="m.cutoff_day" required /></label>
+          <label class="field">Día de pago<input name="payday" type="number" min="2" max="31" [(ngModel)]="m.payment_day" required /></label>
+        </div>
+        <div class="form-row">
+          <label class="field">TEA (%)<input name="tea" inputmode="decimal" [(ngModel)]="m.tea" required /></label>
+          <label class="field">TEA moratoria (%)<input name="late" inputmode="decimal" [(ngModel)]="m.late_tea" required /></label>
+          <label class="field">Semanas máx.<input name="weeks" type="number" min="1" max="99" [(ngModel)]="m.max_weeks" required /></label>
+        </div>
+        <div class="actions"><button class="btn" [disabled]="busy() || f.invalid">Guardar</button></div>
+      </form>
+    }
+  }
+}

@@ -1,0 +1,58 @@
+<app-auth-layout>
+  <h2>Crear cuenta</h2>
+  <p class="lead">Completa tus datos para comenzar con AlToque Pay</p>
+  <app-error [message]="error()" />
+  <form class="form" (ngSubmit)="submit()" #f="ngForm" style="gap: 13px">
+    <div class="form-row two">
+      <label class="field">Nombres
+        <span class="input-icon"><app-icon name="user" [size]="18" />
+          <input name="first" [(ngModel)]="m.firstNames" required maxlength="70" placeholder="Ingresa tus nombres" autocomplete="given-name" /></span>
+      </label>
+      <label class="field">Apellidos
+        <span class="input-icon"><app-icon name="user" [size]="18" />
+          <input name="last" [(ngModel)]="m.lastNames" required maxlength="70" placeholder="Ingresa tus apellidos" autocomplete="family-name" /></span>
+      </label>
+    </div>
+    <div class="form-row two">
+      <label class="field">Nombre del negocio
+        <span class="input-icon"><app-icon name="building" [size]="18" />
+          <input name="business" [(ngModel)]="m.businessName" required maxlength="150" placeholder="Ej. Mi Tienda, Distribuidora" autocomplete="organization" /></span>
+      </label>
+      <label class="field">RUC <span class="opt">(11 dígitos)</span>
+        <span class="input-icon"><app-icon name="file" [size]="18" />
+          <input name="ruc" [(ngModel)]="m.ruc" required pattern="\d{11}" maxlength="11" inputmode="numeric" placeholder="20123456789" /></span>
+      </label>
+    </div>
+    <label class="field">Correo electrónico
+      <span class="input-icon"><app-icon name="mail" [size]="18" />
+        <input name="email" type="email" [(ngModel)]="m.email" required email maxlength="254" placeholder="tu@correo.com" autocomplete="email" /></span>
+    </label>
+    <label class="field">Contraseña <span class="opt">(8 a 128 caracteres)</span>
+      <span class="input-icon has-suffix"><app-icon name="lock" [size]="18" />
+        <input name="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="m.password" required minlength="8" maxlength="128"
+               placeholder="Crea una contraseña" autocomplete="new-password" />
+        <button type="button" class="icon-btn" (click)="showPassword.set(!showPassword())"
+                [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+          <app-icon [name]="showPassword() ? 'eye' : 'eye-off'" [size]="18" /></button>
+      </span>
+    </label>
+    <label class="field">Confirmar contraseña
+      <span class="input-icon has-suffix"><app-icon name="lock" [size]="18" />
+        <input name="confirm" [type]="showConfirm() ? 'text' : 'password'" [(ngModel)]="m.confirm" required
+               placeholder="Repite tu contraseña" autocomplete="new-password" />
+        <button type="button" class="icon-btn" (click)="showConfirm.set(!showConfirm())"
+                [attr.aria-label]="showConfirm() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+          <app-icon [name]="showConfirm() ? 'eye' : 'eye-off'" [size]="18" /></button>
+      </span>
+    </label>
+    <label class="check"><input type="checkbox" name="terms" [(ngModel)]="m.terms" required />
+      Acepto los <strong class="text-brand">términos y condiciones</strong></label>
+    <button class="btn block lg" [disabled]="loading() || f.invalid">
+      {{ loading() ? 'Creando cuenta…' : 'Crear cuenta' }} <app-icon name="arrow-right" [size]="18" />
+    </button>
+  </form>
+  <div class="divider">o</div>
+  <div class="auth-foot" style="margin-top: 0">
+    <span>¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión</a></span>
+  </div>
+</app-auth-layout>

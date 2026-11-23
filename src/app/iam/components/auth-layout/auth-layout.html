@@ -1,0 +1,17 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <section class="auth-hero" aria-label="AlToque Pay">
+      <img class="logo" src="images/logo.png" alt="AlToque Pay" width="150" />
+      <h1>Tu negocio al día, <span>sin complicaciones</span></h1>
+      <p>Gestiona tus ventas a crédito, controla los pagos y haz crecer tu negocio de forma simple y segura.</p>
+      <div class="features">
+        <div><app-icon name="bars" [size]="22" />Control<br />de créditos</div>
+        <div><app-icon name="users" [size]="22" />Gestión<br />de clientes</div>
+        <div><app-icon name="shield" [size]="22" />Seguro<br />y confiable</div>
+      </div>
+    </section>
+    <section class="auth-body">
+      <ng-content />
+    </section>
+  </div>
+</div>

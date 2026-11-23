@@ -1,0 +1,168 @@
+<div class="page-head">
+  <div>
+    <h1>Estado de cuenta / Plan de pagos</h1>
+    <p>Consulta el detalle del crédito, revisa su plan de pagos y registra los abonos.</p>
+  </div>
+  <div class="actions">
+    @if (p()?.status === 'ACTIVE') {
+      <button class="btn outline-danger" (click)="voidIt()" [disabled]="busy()"><app-icon name="ban" [size]="17" /> Anular</button>
+    }
+    <button class="btn outline" (click)="location.back()"><app-icon name="arrow-left" [size]="17" /> Volver</button>
+  </div>
+</div>
+<app-error [message]="error()" />
+
+@if (p(); as p) {
+  @let a = account();
+  @if (p.status === 'VOIDED') {
+    <div class="alert warn"><app-icon name="ban" [size]="18" /><span>Compra anulada el {{ p.voided_at | fecha: true }}.</span></div>
+  }
+
+  <!-- Cliente y crédito -->
+  <section class="card client-card">
+    <div class="cell-person">
+      <span class="avatar lg">{{ a ? initials(a.first_names + ' ' + a.last_names) : '··' }}</span>
+      <div>
+        <strong class="name">{{ a ? a.first_names + ' ' + a.last_names : 'Cuenta #' + p.customer_id }}</strong>
+        <small>DNI {{ a?.dni ?? '—' }}</small>
+        <div class="tags">
+          @if (a) { <app-badge [value]="a.status" [label]="a.status === 'ACTIVE' ? 'Cliente activo' : 'Cliente inactivo'" /> }
+          @if (a) { <small>Cliente desde {{ a.created_at | fecha }}</small> }
+        </div>
+      </div>
+    </div>
+    <div class="metric">
+      <span class="chip-icon sm blue"><app-icon name="card" [size]="17" /></span>
+      <div><small>Línea de crédito</small><strong>{{ a ? (a.credit_limit | soles) : '—' }}</strong></div>
+    </div>
+    <div class="metric">
+      <span class="chip-icon sm violet"><app-icon name="database" [size]="17" /></span>
+      <div style="min-width: 120px"><small>Esta compra</small><strong>{{ p.amount | soles }}</strong>
+        <div class="progress-row"><div class="progress" style="flex: 1"><span [style.width.%]="usedPct()"></span></div><small>{{ usedPct() }}%</small></div></div>
+    </div>
+    <div class="metric">
+      <span class="chip-icon sm green"><app-icon name="dollar" [size]="17" /></span>
+      <div><small>Saldo pendiente</small><strong>{{ pending() | soles }}</strong></div>
+    </div>
+    <div class="metric">
+      <div><small>Estado</small><app-badge [value]="p.status" /></div>
+    </div>
+  </section>
+
+  <!-- Cifras -->
+  <div class="grid cols-5" style="margin-bottom: 18px">
+    <div class="stat">
+      <span class="chip-icon green"><app-icon name="cart" /></span>
+      <div><div class="label">Monto financiado</div><div class="value">{{ p.capitalized_amount ?? p.amount | soles }}</div><div class="sub">de esta compra</div></div>
+    </div>
+    <div class="stat">
+      <span class="chip-icon violet"><app-icon name="percent" /></span>
+      <div><div class="label">Interés estimado</div><div class="value">{{ p.ordinary_interest | soles }}</div></div>
+    </div>
+    <div class="stat">
+      <span class="chip-icon blue"><app-icon name="file" /></span>
+      <div><div class="label">Total a pagar</div><div class="value">{{ p.total | soles }}</div></div>
+    </div>
+    <div class="stat">
+      <span class="chip-icon blue"><app-icon name="calendar" /></span>
+      @if (p.mode === 'WEEKLY') {
+        <div><div class="label">Cuota semanal</div><div class="value">{{ p.installment_amount | soles }}</div><div class="sub">{{ p.installments_count }} cuotas</div></div>
+      } @else {
+        <div><div class="label">Plazo</div><div class="value">{{ p.term_days ?? '—' }} días</div><div class="sub">fecha única</div></div>
+      }
+    </div>
+    <div class="stat">
+      <span class="chip-icon blue"><app-icon name="clock" /></span>
+      @if (nextDue(); as due) {
+        <div><div class="label">Próximo vencimiento</div><div class="value">{{ due | fecha }}</div>
+          <div class="sub" [class.text-bad]="daysLeft(due) < 0">
+            {{ daysLeft(due) < 0 ? 'Vencido hace ' + daysAgo(due) + ' días' : daysLeft(due) === 0 ? 'Vence hoy' : daysLeft(due) + ' días restantes' }}</div></div>
+      } @else {
+        <div><div class="label">Próximo vencimiento</div><div class="value">—</div><div class="sub">{{ p.status | label }}</div></div>
+      }
+    </div>
+  </div>
+
+  <div class="grid main-aside">
+    <section class="card">
+      @if (p.mode === 'WEEKLY') {
+        <h2>Plan de pagos ({{ p.installments_count }} cuotas)</h2>
+        <p class="muted small" style="margin: 0 0 14px">Detalle de las cuotas del crédito. El estado se calcula con la fecha de hoy.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>N° cuota</th><th>Fecha de vencimiento</th><th class="right">Saldo inicial</th><th class="right">Interés</th>
+              <th class="right">Amortización</th><th class="right">Cuota</th><th class="right">Saldo final</th><th>Estado</th></tr></thead>
+            <tbody>
+              @for (i of schedule(); track i.number) {
+                <tr>
+                  <td class="center strong">{{ i.number }}</td>
+                  <td>{{ i.due_date | fecha }}</td>
+                  <td class="num">{{ i.opening_balance | soles }}</td>
+                  <td class="num">{{ i.interest | soles }}</td>
+                  <td class="num">{{ i.amortization | soles }}</td>
+                  <td class="num strong">{{ i.amount | soles }}</td>
+                  <td class="num">{{ i.closing_balance | soles }}</td>
+                  <td>@let st = status(i); <app-badge [value]="i.status" [label]="st.label" [tone]="st.tone" /></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <h2>Pago en fecha determinada</h2>
+        <p class="muted small" style="margin: 0 0 14px">Esta compra entra en el estado de cuenta del mes y se paga en el día de pago.</p>
+        @if (cycle(); as c) {
+          <dl class="kv">
+            <dt>Ciclo</dt><dd>{{ c.month }}/{{ c.year }}</dd>
+            <dt>Fecha de corte</dt><dd>{{ c.cutoff_date | fecha }}</dd>
+            <dt>Fecha de pago</dt><dd>{{ c.payment_date | fecha }}</dd>
+            <dt>Estado del ciclo</dt><dd><app-badge [value]="c.status" /></dd>
+          </dl>
+          <a class="btn outline sm" style="margin-top: 14px" [routerLink]="['/store/customers', p.customer_id, 'cycles', c.year, c.month]">Ver estado de cuenta del mes</a>
+        }
+      }
+
+      <h3 style="margin-top: 22px">Productos</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Producto</th><th class="right">Cant.</th><th class="right">P. lista</th><th class="right">Subtotal</th></tr></thead>
+          <tbody>
+            @for (it of p.items; track it.product_id) {
+              <tr>
+                <td>{{ products()[it.product_id]?.description ?? 'Producto #' + it.product_id }}</td>
+                <td class="num">{{ it.quantity }}</td><td class="num">{{ it.unit_list_price | soles }}</td><td class="num">{{ it.subtotal | soles }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin-bottom: 10px">Resumen de la operación</h2>
+      <dl class="kv">
+        <dt><app-icon name="cart" [size]="16" /> Producto / servicio</dt><dd>{{ productSummary() }}</dd>
+        <dt><app-icon name="calendar" [size]="16" /> Fecha de compra</dt><dd>{{ p.purchased_at | fecha }}</dd>
+        <dt><app-icon name="card" [size]="16" /> Modalidad de pago</dt><dd>{{ p.mode === 'WEEKLY' ? 'Cuotas semanales' : 'Fecha determinada' }}</dd>
+        <dt><app-icon name="percent" [size]="16" /> Tipo de tasa</dt><dd>Efectiva anual (TEA)</dd>
+        <dt><app-icon name="percent" [size]="16" /> TEA</dt><dd>{{ p.tea | pct }}</dd>
+        <dt><app-icon name="percent" [size]="16" /> Tasa moratoria</dt><dd>{{ p.late_tea | pct }}</dd>
+        @if (p.mode === 'WEEKLY') {
+          <dt><app-icon name="percent" [size]="16" /> Tasa semanal</dt><dd>{{ p.weekly_rate | pct: 7 }}</dd>
+          <dt><app-icon name="info" [size]="16" /> Período de gracia</dt><dd>Gracia total ({{ p.grace_days ?? 0 }} días)</dd>
+        }
+        <dt><app-icon name="coins" [size]="16" /> Moneda</dt><dd>Soles (S/)</dd>
+      </dl>
+    </section>
+  </div>
+
+  <div class="actions footer">
+    <button class="btn outline" (click)="downloadStatement()" [disabled]="!cycle() || downloading()"
+            [title]="cycle() ? 'PDF del estado de cuenta del mes de esta compra' : 'Cargando el ciclo…'">
+      <app-icon name="download" [size]="17" /> {{ downloading() ? 'Descargando…' : 'Descargar estado de cuenta' }}
+    </button>
+    @if (payLink(); as link) {
+      <a class="btn" routerLink="/store/payments/new" [queryParams]="link"><app-icon name="card" [size]="17" /> Registrar pago</a>
+    }
+  </div>
+}

@@ -1,0 +1,38 @@
+<div class="page-head">
+  <div><h1>Hola{{ auth.user()?.full_name ? ', ' + auth.user()?.full_name : '' }}</h1><p>Tu crédito en cada bodega.</p></div>
+</div>
+<app-error [message]="error()" />
+<div class="grid cols-3">
+  @for (s of stores(); track s.store_id) {
+    <a class="card" style="text-decoration: none; color: inherit; margin: 0" [routerLink]="['/portal/stores', s.store_id]">
+      <div style="display: flex; justify-content: space-between; align-items: start">
+        <h2>{{ s.business_name }}</h2>
+        <app-badge [value]="s.store_status === 'ACTIVE' ? s.account_status : 'INACTIVE'" />
+      </div>
+      @if (summaries()[s.store_id]; as o) {
+        <div class="total-line"><span class="muted">Disponible</span><strong>{{ o.available_credit | soles }}</strong></div>
+        <div class="total-line"><span class="muted">Deuda</span><span>{{ o.outstanding_principal | soles }}</span></div>
+        <div class="total-line"><span class="muted">Límite</span><span>{{ o.credit_limit | soles }}</span></div>
+        @if (o.installments.length) {
+          <div class="small muted" style="margin-top: 6px">Próxima cuota: {{ o.installments[0].amount | soles }} el {{ o.installments[0].due_date | fecha }}</div>
+        }
+      } @else {
+        <p class="muted small">Cargando…</p>
+      }
+    </a>
+  } @empty {
+    @if (!loading()) {
+      <div class="card" style="grid-column: 1 / -1"><p class="muted" style="margin: 0">Todavía no tienes bodegas vinculadas. Agrega una con su código.</p></div>
+    }
+  }
+</div>
+
+<form class="card form" style="margin-top: 18px; max-width: 520px" (ngSubmit)="link()" #f="ngForm">
+  <h2>Agregar otra bodega</h2>
+  <p class="muted small" style="margin: 0">Pide a la bodega tu código de acceso (12 caracteres, vale 48 horas).</p>
+  <app-error [message]="linkError()" />
+  <div class="filters" style="margin: 0">
+    <input name="code" class="mono" [(ngModel)]="code" required maxlength="20" placeholder="Código de acceso" style="text-transform: uppercase; flex: 1" />
+    <button class="btn" [disabled]="linking() || f.invalid">Vincular</button>
+  </div>
+</form>
