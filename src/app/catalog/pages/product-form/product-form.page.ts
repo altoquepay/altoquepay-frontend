@@ -11,7 +11,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-/** Crear (sin id) o editar producto, con imagen y desactivación. */
+/** Crear (sin id) o editar producto, con imagen, desactivación y reactivación. */
 @Component({
   selector: 'app-product-form',
   templateUrl: './product-form.page.html',
@@ -81,6 +81,25 @@ export class ProductFormPage implements OnInit {
         this.busy.set(false);
         this.fill(x);
         this.toast.show('Producto desactivado.');
+      },
+      error: (e) => {
+        this.busy.set(false);
+        this.error.set(parseError(e).message);
+      },
+    });
+  }
+
+  /** Vuelve a vender un producto desactivado, con los datos y precios que tiene ahora. */
+  reactivate(): void {
+    const p = this.product();
+    if (!p) return;
+    this.busy.set(true);
+    this.error.set(null);
+    this.productsApi.reactivateProduct(p.id).subscribe({
+      next: (x) => {
+        this.busy.set(false);
+        this.fill(x);
+        this.toast.show('Producto activo otra vez: ya se puede vender.');
       },
       error: (e) => {
         this.busy.set(false);

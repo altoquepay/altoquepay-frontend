@@ -31,6 +31,9 @@ export class ProductsService {
   deactivateProduct(id: number): Observable<Product> {
     return this.http.patch<Product>(`${this.api}/products/${id}/deactivate`, {});
   }
+  reactivateProduct(id: number): Observable<Product> {
+    return this.http.patch<Product>(`${this.api}/products/${id}/reactivate`, {});
+  }
   uploadProductImage(id: number, file: File): Observable<Product> {
     const form = new FormData();
     form.append('image', file);
