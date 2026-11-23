@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Catalog**: *Volver a vender* on the page of an inactive product reactivates it with `PATCH /products/{id}/reactivate` (backend `0.8.0`).
+
 ### Fixed
 - **Customers and Stores**: the phone is required and only accepts the 9 digits of a mobile number, or +51 followed by them. Letters or symbols show *Solo se aceptan números* and the form cannot be saved.
 

@@ -4,8 +4,12 @@
     @if (product(); as p) { <p>Código <span class="mono">{{ p.code }}</span> · <app-badge [value]="p.is_active ? 'ACTIVE' : 'INACTIVE'" /></p> }
   </div>
   <div class="actions">
-    @if (product()?.is_active) {
-      <button class="btn outline-danger" (click)="deactivate()" [disabled]="busy()">Dejar de vender</button>
+    @if (product(); as p) {
+      @if (p.is_active) {
+        <button class="btn outline-danger" (click)="deactivate()" [disabled]="busy()">Dejar de vender</button>
+      } @else {
+        <button class="btn" (click)="reactivate()" [disabled]="busy()">Volver a vender</button>
+      }
     }
     <a class="btn ghost" routerLink="/store/products">Volver</a>
   </div>
