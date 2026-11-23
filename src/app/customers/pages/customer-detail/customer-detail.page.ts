@@ -20,6 +20,7 @@ import { PctPipe } from '../../../shared/pipes/pct.pipe';
 import { SolesPipe } from '../../../shared/pipes/soles.pipe';
 import { ToastService } from '../../../shared/services/toast.service';
 import { Icon } from '../../../shared/components/icon/icon';
+import { isValidPhone, PHONE_PATTERN, phoneProblem } from '../../../shared/utils/phone';
 
 type Tab = 'purchases' | 'cycles' | 'payments' | 'edit';
 
@@ -44,6 +45,8 @@ export class CustomerDetailPage implements OnInit {
   busy = signal(false);
   error = signal<string | null>(null);
   m!: UpdateAccount;
+  readonly phonePattern = PHONE_PATTERN;
+  readonly phoneProblem = phoneProblem;
 
   private get accountId(): number {
     return Number(this.id());
@@ -83,6 +86,10 @@ export class CustomerDetailPage implements OnInit {
   }
 
   save(): void {
+    if (!isValidPhone(this.m.phone)) {
+      this.error.set(phoneProblem(this.m.phone));
+      return;
+    }
     if (this.m.payment_day <= this.m.cutoff_day) {
       this.error.set('El día de pago debe ser posterior al día de corte.');
       return;

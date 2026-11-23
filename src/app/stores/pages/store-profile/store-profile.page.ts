@@ -10,6 +10,7 @@ import { Icon } from '../../../shared/components/icon/icon';
 import { FechaPipe } from '../../../shared/pipes/fecha.pipe';
 import { PctPipe } from '../../../shared/pipes/pct.pipe';
 import { ToastService } from '../../../shared/services/toast.service';
+import { isValidPhone, PHONE_PATTERN, phoneProblem } from '../../../shared/utils/phone';
 import { Store, UpdateStoreProfile } from '../../model/store';
 import { StoresService } from '../../services/stores.service';
 
@@ -36,7 +37,9 @@ export class StoreProfilePage implements OnInit {
     default_tea: '', default_late_tea: '', default_max_weeks: 4,
   };
 
-  readonly cutoffDays = Array.from({ length: 25 }, (_, i) => i + 1);
+  readonly phonePattern = PHONE_PATTERN;
+  readonly phoneProblem = phoneProblem;
+  readonly cutoffDays =Array.from({ length: 25 }, (_, i) => i + 1);
   cutoff = signal(10);
   paymentDays = computed(() => Array.from({ length: 28 - this.cutoff() }, (_, i) => this.cutoff() + 1 + i));
 
@@ -69,6 +72,10 @@ export class StoreProfilePage implements OnInit {
     const setError = section === 'business' ? this.businessError : this.preferencesError;
     this.businessError.set(null);
     this.preferencesError.set(null);
+    if (!isValidPhone(this.m.phone)) {
+      this.businessError.set(phoneProblem(this.m.phone));
+      return;
+    }
     if (this.m.default_payment_day <= this.m.default_cutoff_day) {
       this.preferencesError.set('El día de pago debe ser posterior al día de corte.');
       return;

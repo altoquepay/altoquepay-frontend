@@ -13,6 +13,7 @@ import { FechaPipe } from '../../../shared/pipes/fecha.pipe';
 import { SolesPipe } from '../../../shared/pipes/soles.pipe';
 import { ToastService } from '../../../shared/services/toast.service';
 import { initials } from '../../../shared/utils/initials';
+import { isValidPhone, PHONE_PATTERN, phoneProblem } from '../../../shared/utils/phone';
 import { AccountStatus, CustomerAccount, UpdateAccount } from '../../model/customer';
 import { CustomersService } from '../../services/customers.service';
 
@@ -28,6 +29,8 @@ export class CustomerListPage implements OnInit {
   private readonly reportingApi = inject(ReportingService);
   private readonly toast = inject(ToastService);
   readonly initials = initials;
+  readonly phonePattern = PHONE_PATTERN;
+  readonly phoneProblem = phoneProblem;
 
   search = '';
   status: AccountStatus | '' = '';
@@ -85,6 +88,10 @@ export class CustomerListPage implements OnInit {
   save(): void {
     const c = this.selected();
     if (!c || !this.form) return;
+    if (!isValidPhone(this.form.phone)) {
+      this.formError.set(phoneProblem(this.form.phone));
+      return;
+    }
     if (this.form.payment_day <= this.form.cutoff_day) {
       this.formError.set('El día de pago debe ser posterior al día de corte.');
       return;

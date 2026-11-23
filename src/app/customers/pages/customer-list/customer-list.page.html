@@ -89,7 +89,8 @@
           </div>
           <div class="form-row two">
             <label class="field">Teléfono
-              <span class="input-icon"><app-icon name="phone" [size]="17" /><input name="phone" [(ngModel)]="f.phone" maxlength="20" /></span></label>
+              <span class="input-icon"><app-icon name="phone" [size]="17" /><input name="phone" type="tel" inputmode="tel" [(ngModel)]="f.phone" #phoneCtl="ngModel" maxlength="20" required [pattern]="phonePattern" placeholder="987 654 321" /></span>
+              @if (phoneCtl.invalid && (phoneCtl.dirty || phoneCtl.touched)) { <span class="hint bad">{{ phoneProblem(f.phone) }}</span> }</label>
             <label class="field">Línea de crédito
               <span class="input-icon"><app-icon name="wallet" [size]="17" /><input name="limit" inputmode="decimal" [(ngModel)]="f.credit_limit" required /></span></label>
           </div>
