@@ -45,7 +45,8 @@
         <label class="field">Apellidos<input name="last" [(ngModel)]="m.last_names" required maxlength="100" /></label>
       </div>
       <div class="form-row">
-        <label class="field">Teléfono<input name="phone" [(ngModel)]="m.phone" maxlength="20" /></label>
+        <label class="field">Teléfono<input name="phone" type="tel" inputmode="tel" [(ngModel)]="m.phone" #phoneCtl="ngModel" maxlength="20" required [pattern]="phonePattern" placeholder="987 654 321" />
+          @if (phoneCtl.invalid && (phoneCtl.dirty || phoneCtl.touched)) { <span class="hint bad">{{ phoneProblem(m.phone) }}</span> }</label>
         <label class="field">Dirección<input name="address" [(ngModel)]="m.address" maxlength="200" /></label>
       </div>
       <div class="form-row">

@@ -7,6 +7,7 @@ import { AccessCodeCard } from '../../components/access-code-card/access-code-ca
 import { OpenAccount, OpenedAccount, PersonLookup } from '../../model/customer';
 import { CustomersService } from '../../services/customers.service';
 import { ErrorAlert } from '../../../shared/components/error-alert/error-alert';
+import { isValidPhone, PHONE_PATTERN, phoneProblem } from '../../../shared/utils/phone';
 import { Store } from '../../../stores/model/store';
 import { StoresService } from '../../../stores/services/stores.service';
 
@@ -29,6 +30,8 @@ export class CustomerNewPage implements OnInit {
   error = signal<string | null>(null);
   opened = signal<OpenedAccount | null>(null);
   m = this.empty();
+  readonly phonePattern = PHONE_PATTERN;
+  readonly phoneProblem = phoneProblem;
 
   ngOnInit(): void {
     this.storesApi.getProfile().subscribe({ next: (s) => this.store.set(s), error: () => {} });
@@ -61,6 +64,10 @@ export class CustomerNewPage implements OnInit {
   }
 
   submit(): void {
+    if (!isValidPhone(this.m.phone)) {
+      this.error.set(phoneProblem(this.m.phone));
+      return;
+    }
     if (this.m.cutoff_day && this.m.payment_day && this.m.payment_day <= this.m.cutoff_day) {
       this.error.set('El día de pago debe ser posterior al día de corte.');
       return;
