@@ -127,6 +127,19 @@ export class CustomerDetailPage implements OnInit {
     });
   }
 
+  /** Permite comprar al crédito otra vez, con la línea y las condiciones que la cuenta tiene ahora. */
+  reactivate(): void {
+    this.busy.set(true);
+    this.customersApi.reactivateCustomer(this.accountId).subscribe({
+      next: (a) => {
+        this.busy.set(false);
+        this.fill(a);
+        this.toast.show('Cuenta reactivada: ya puede comprar al crédito otra vez.');
+      },
+      error: (e) => this.fail(e),
+    });
+  }
+
   newCode(): void {
     this.busy.set(true);
     this.customersApi.newAccessCode(this.accountId).subscribe({
