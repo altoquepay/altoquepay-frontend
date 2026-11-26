@@ -30,6 +30,9 @@ export class CustomersService {
   deactivateCustomer(accountId: number): Observable<CustomerAccount> {
     return this.http.patch<CustomerAccount>(`${this.api}/customers/${accountId}/deactivate`, {});
   }
+  reactivateCustomer(accountId: number): Observable<CustomerAccount> {
+    return this.http.patch<CustomerAccount>(`${this.api}/customers/${accountId}/reactivate`, {});
+  }
   newAccessCode(accountId: number): Observable<AccessCode> {
     return this.http.post<AccessCode>(`${this.api}/customers/${accountId}/access-code`, {});
   }
