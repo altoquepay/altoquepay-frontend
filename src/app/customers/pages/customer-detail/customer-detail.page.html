@@ -12,6 +12,8 @@
       <button class="btn ghost" (click)="newCode()" [disabled]="busy()">Generar código de acceso</button>
       @if (a.status === 'ACTIVE') {
         <button class="btn outline-danger" (click)="deactivate()" [disabled]="busy()">Desactivar</button>
+      } @else {
+        <button class="btn" (click)="reactivate()" [disabled]="busy()">Reactivar</button>
       }
       <a class="btn ghost" routerLink="/store/customers">Volver</a>
     </div>
