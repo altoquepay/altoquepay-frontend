@@ -57,7 +57,7 @@
       <p class="muted small" style="margin: 0">Deja vacío lo que quieras tomar de los valores de tu bodega.</p>
       <div class="form-row">
         <label class="field">Día de corte<input name="cutoff" type="number" min="1" max="25" [(ngModel)]="m.cutoff_day" [placeholder]="store()?.default_cutoff_day ?? ''" /></label>
-        <label class="field">Día de pago<input name="payday" type="number" min="2" max="31" [(ngModel)]="m.payment_day" [placeholder]="store()?.default_payment_day ?? ''" /></label>
+        <label class="field">Día de pago<input name="payday" type="number" min="2" max="28" [(ngModel)]="m.payment_day" [placeholder]="store()?.default_payment_day ?? ''" /></label>
         <label class="field">TEA (%)<input name="tea" inputmode="decimal" [(ngModel)]="m.tea" [placeholder]="store()?.default_tea ?? ''" /></label>
         <label class="field">TEA moratoria (%)<input name="late" inputmode="decimal" [(ngModel)]="m.late_tea" [placeholder]="store()?.default_late_tea ?? ''" /></label>
         <label class="field">Semanas máx.<input name="weeks" type="number" min="1" max="99" [(ngModel)]="m.max_weeks" [placeholder]="store()?.default_max_weeks ?? ''" /></label>

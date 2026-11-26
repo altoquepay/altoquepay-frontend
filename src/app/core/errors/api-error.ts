@@ -104,6 +104,7 @@ export function parseError(err: unknown): ParsedError {
     if (body.code === 'VALIDATION_ERROR' && body.field) {
       message = `Revisa el campo "${body.field}": ${body.message}`;
     }
+    if (body.code === 'INVALID_DAY_RANGE' && body.field === 'payment_day') message = 'El día de pago debe estar entre 1 y 28.';
     return { code: body.code, message, field: body.field ?? null, fieldErrors };
   }
   return { code: 'UNKNOWN', message: 'Ocurrió un error inesperado.', field: null, fieldErrors: {} };
