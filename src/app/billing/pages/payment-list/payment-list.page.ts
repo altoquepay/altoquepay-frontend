@@ -32,6 +32,11 @@ export class PaymentListPage implements OnInit {
   }
 
   load(page: number): void {
+    if (this.from && this.to && this.to < this.from) {
+      this.error.set('La fecha final debe ser igual o posterior a la inicial.');
+      this.data.set(null);
+      return;
+    }
     this.loading.set(true);
     this.error.set(null);
     this.billingApi.listPayments({ page, size: 20, kind: this.kind, from: this.from, to: this.to, customer_id: this.customerId }).subscribe({
