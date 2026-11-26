@@ -2,7 +2,7 @@
 
 Web frontend of **AlToquePay**, a web application for small neighborhood businesses (corner stores, bakeries, butcher shops, hair salons and similar) to manage the credit they grant to their customers. It replaces the paper notebook with a digital, automated record of customers, credit purchases, payment schedules and late payments.
 
-> **Status:** early development (`0.x`). Every screen of the first release is built on top of [altoquepay-backend](https://github.com/altoquepay/altoquepay-backend) API `0.7.1`, covering its 52 endpoints. The UI is in Spanish.
+> **Status:** early development (`0.x`). Every screen of the first release is built on top of [altoquepay-backend](https://github.com/altoquepay/altoquepay-backend) API `0.9.0`, covering its 54 endpoints. The UI is in Spanish.
 
 ## Overview
 
@@ -58,12 +58,12 @@ Late-payment interest is calculated on the overdue amount using the late-payment
 
 | Role | Screens |
 | --- | --- |
-| Public | Sign in (email or DNI), store registration, forgot and reset password (`/reset-password?token=…`), customer access-code activation (`/activate`) |
-| `STORE_ADMIN` | Dashboard, store profile and default credit conditions, customers (DNI lookup, account opening with access code, edit, deactivate, new access code), products (with image upload), new credit sale (simulate, then register), purchases (detail, schedule, void), installments, cycles and account statements (with PDF), payments (quote, then register) and period report |
+| Public | Sign in (email or DNI), store registration, forgot and reset password (`/reset-password?token=…`), customer access-code activation (`/activate`), help and support (`/help`) |
+| `STORE_ADMIN` | Dashboard, store profile and default credit conditions, customers (DNI lookup, account opening with access code, edit, deactivate, reactivate, new access code), products (with image upload, deactivate and reactivate), new credit sale (simulate, then register), purchases (detail, schedule, void), installments, cycles and account statements (with PDF), payments (quote, then register) and period report |
 | `CUSTOMER` | Customer portal: linked stores, available credit, pending installments, purchases and their schedules, monthly statements, link another store with a code |
 | `SYSTEM_ADMIN` | Stores (deactivate, reactivate), BCRP rate caps and trusted store for a customer |
 
-Every signed-in user can change their password. When `must_change_password` is `true`, the app sends the user to that screen first.
+Every signed-in user can change their password and open *Ayuda y soporte* from the user menu. When `must_change_password` is `true`, the app sends the user to that screen first.
 
 ## Design
 
@@ -86,6 +86,7 @@ src/app/
   billing/       cycles, account statements and payments
   reporting/     dashboard, period report and customer portal
   regulation/    BCRP rate caps
+  support/       help and support page
 ```
 
 Each context has `model/` (API resources), `services/` (one service per API area) and `pages/` (routed screens: `name.page.ts`, `name.page.html`, `name.page.scss`). Routes are lazy loaded from `app.routes.ts`.
