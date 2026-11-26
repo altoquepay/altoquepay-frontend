@@ -71,7 +71,9 @@
             <div class="cart-line">
               <div><strong>{{ l.product.description }}</strong>
                 <div class="small muted">{{ l.product.category }} · {{ l.product.list_price | soles }} c/u</div></div>
-              <input type="number" min="1" max="10000" [ngModel]="l.quantity" (ngModelChange)="setQty(l, $event)" aria-label="Cantidad" />
+              <!-- setQty ajusta a 1–10 000; si el valor ajustado no cambia, ngModel no repinta el input: el blur lo sincroniza. -->
+              <input #qty type="number" min="1" max="10000" [ngModel]="l.quantity" (ngModelChange)="setQty(l, $event)"
+                     (blur)="qty.value = '' + l.quantity" aria-label="Cantidad" />
               <div class="num strong">{{ lineTotal(l) | soles }}</div>
               <button type="button" class="icon-btn" (click)="remove(l)" aria-label="Quitar producto"><app-icon name="x" [size]="16" /></button>
             </div>
