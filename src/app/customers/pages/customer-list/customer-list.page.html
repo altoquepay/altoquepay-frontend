@@ -92,7 +92,7 @@
               <span class="input-icon"><app-icon name="phone" [size]="17" /><input name="phone" type="tel" inputmode="tel" [(ngModel)]="f.phone" #phoneCtl="ngModel" maxlength="20" required [pattern]="phonePattern" placeholder="987 654 321" /></span>
               @if (phoneCtl.invalid && (phoneCtl.dirty || phoneCtl.touched)) { <span class="hint bad">{{ phoneProblem(f.phone) }}</span> }</label>
             <label class="field">Línea de crédito
-              <span class="input-icon"><app-icon name="wallet" [size]="17" /><input name="limit" inputmode="decimal" [(ngModel)]="f.credit_limit" required /></span></label>
+              <span class="input-icon"><app-icon name="wallet" [size]="17" /><input name="limit" inputmode="decimal" [(ngModel)]="f.credit_limit" required pattern="^\d+(\.\d{1,2})?$" /></span></label>
           </div>
           <div class="form-row two">
             <label class="field">Día de corte <span class="opt">(1 a 25)</span>
@@ -102,9 +102,9 @@
           </div>
           <div class="form-row two">
             <label class="field">TEA
-              <span class="input-icon has-suffix"><app-icon name="percent" [size]="17" /><input name="tea" inputmode="decimal" [(ngModel)]="f.tea" required /><span class="suffix">%</span></span></label>
+              <span class="input-icon has-suffix"><app-icon name="percent" [size]="17" /><input name="tea" inputmode="decimal" [(ngModel)]="f.tea" required pattern="^\d+(\.\d{1,7})?$" /><span class="suffix">%</span></span></label>
             <label class="field">TEA moratoria
-              <span class="input-icon has-suffix"><app-icon name="percent" [size]="17" /><input name="late" inputmode="decimal" [(ngModel)]="f.late_tea" required /><span class="suffix">%</span></span></label>
+              <span class="input-icon has-suffix"><app-icon name="percent" [size]="17" /><input name="late" inputmode="decimal" [(ngModel)]="f.late_tea" required pattern="^\d+(\.\d{1,7})?$" /><span class="suffix">%</span></span></label>
           </div>
           <div class="form-row two">
             <label class="field">Moneda<input value="Soles (S/)" readonly /></label>

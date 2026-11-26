@@ -76,7 +76,8 @@ export class CustomerListPage implements OnInit {
     this.form = c && {
       first_names: c.first_names, last_names: c.last_names, phone: c.phone, address: c.address,
       credit_limit: c.credit_limit, cutoff_day: c.cutoff_day, payment_day: c.payment_day,
-      tea: c.tea, late_tea: c.late_tea, max_weeks: c.max_weeks,
+      // La API puede mandar una tasa en cero como 0E-7: Number la deja como 0 para que pase el pattern.
+      tea: String(Number(c.tea)), late_tea: String(Number(c.late_tea)), max_weeks: c.max_weeks,
     };
     this.selected.set(c);
   }

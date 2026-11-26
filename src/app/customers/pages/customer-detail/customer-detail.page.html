@@ -102,13 +102,13 @@
           <label class="field">Dirección<input name="address" [(ngModel)]="m.address" maxlength="200" /></label>
         </div>
         <div class="form-row">
-          <label class="field">Límite (S/)<input name="limit" inputmode="decimal" [(ngModel)]="m.credit_limit" required /></label>
+          <label class="field">Límite (S/)<input name="limit" inputmode="decimal" [(ngModel)]="m.credit_limit" required pattern="^\d+(\.\d{1,2})?$" /></label>
           <label class="field">Día de corte<input name="cutoff" type="number" min="1" max="25" [(ngModel)]="m.cutoff_day" required /></label>
           <label class="field">Día de pago<input name="payday" type="number" min="2" max="28" [(ngModel)]="m.payment_day" required /></label>
         </div>
         <div class="form-row">
-          <label class="field">TEA (%)<input name="tea" inputmode="decimal" [(ngModel)]="m.tea" required /></label>
-          <label class="field">TEA moratoria (%)<input name="late" inputmode="decimal" [(ngModel)]="m.late_tea" required /></label>
+          <label class="field">TEA (%)<input name="tea" inputmode="decimal" [(ngModel)]="m.tea" required pattern="^\d+(\.\d{1,7})?$" /></label>
+          <label class="field">TEA moratoria (%)<input name="late" inputmode="decimal" [(ngModel)]="m.late_tea" required pattern="^\d+(\.\d{1,7})?$" /></label>
           <label class="field">Semanas máx.<input name="weeks" type="number" min="1" max="99" [(ngModel)]="m.max_weeks" required /></label>
         </div>
         <div class="actions"><button class="btn" [disabled]="busy() || f.invalid">Guardar</button></div>
