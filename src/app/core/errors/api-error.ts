@@ -73,6 +73,52 @@ const MESSAGES: Record<string, string> = {
   USER_INACTIVE: 'Este usuario fue desactivado.',
 };
 
+/** Nombre en español de cada campo que la API puede rechazar en un VALIDATION_ERROR. */
+const FIELD_LABELS: Record<string, string> = {
+  first_names: 'nombres',
+  last_names: 'apellidos',
+  full_name: 'nombre completo',
+  business_name: 'nombre del negocio',
+  ruc: 'RUC',
+  dni: 'DNI',
+  email: 'correo',
+  phone: 'teléfono',
+  address: 'dirección',
+  password: 'contraseña',
+  new_password: 'contraseña',
+  current_password: 'contraseña',
+  code: 'código',
+  token: 'enlace',
+  credit_limit: 'límite de crédito',
+  cutoff_day: 'día de corte',
+  default_cutoff_day: 'día de corte',
+  payment_day: 'día de pago',
+  default_payment_day: 'día de pago',
+  tea: 'TEA',
+  default_tea: 'TEA',
+  late_tea: 'TEA moratoria',
+  default_late_tea: 'TEA moratoria',
+  max_weeks: 'semanas máximas',
+  default_max_weeks: 'semanas máximas',
+  max_tea: 'TEA máxima',
+  valid_from: 'vigente desde',
+  valid_to: 'vigente hasta',
+  description: 'descripción',
+  brand: 'marca',
+  category: 'categoría',
+  unit: 'unidad',
+  supplier: 'proveedor',
+  cash_price: 'precio al contado',
+  list_price: 'precio de lista',
+  quantity: 'cantidad',
+  purchased_at: 'fecha de compra',
+  installments_count: 'número de cuotas',
+  amount: 'monto',
+  store_id: 'tienda',
+  from: 'fecha inicial',
+  to: 'fecha final',
+};
+
 export interface ParsedError {
   code: string;
   message: string;
@@ -102,8 +148,11 @@ export function parseError(err: unknown): ParsedError {
       message += ` (${detail})`;
     }
     if (body.code === 'VALIDATION_ERROR' && body.field) {
-      message = `Revisa el campo "${body.field}": ${body.message}`;
+      // El mensaje de la API viene en inglés: solo usamos el campo (items.0.quantity → quantity).
+      const label = FIELD_LABELS[body.field.split('.').pop()!];
+      message = label ? `Revisa el campo "${label}".` : MESSAGES['VALIDATION_ERROR'];
     }
+    if (body.code === 'INVALID_DAY_RANGE' && body.field === 'payment_day') message = 'El día de pago debe estar entre 1 y 28.';
     return { code: body.code, message, field: body.field ?? null, fieldErrors };
   }
   return { code: 'UNKNOWN', message: 'Ocurrió un error inesperado.', field: null, fieldErrors: {} };
