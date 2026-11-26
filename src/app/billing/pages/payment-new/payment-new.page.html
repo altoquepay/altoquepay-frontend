@@ -29,11 +29,11 @@
         <small>{{ info().help }}</small>
       </label>
       <label class="field">{{ info().targetLabel }}
-        <input type="number" min="1" [(ngModel)]="targetId" (ngModelChange)="quote.set(null)" />
+        <input type="number" min="1" #targetCtl="ngModel" required pattern="^\d+$" [(ngModel)]="targetId" (ngModelChange)="quote.set(null)" />
         <small>Puedes llegar aquí con el id ya puesto desde Cuotas, Ciclos o el detalle de una compra.</small>
       </label>
       <app-error [message]="error()" />
-      <button class="btn" (click)="doQuote()" [disabled]="busy() || !targetId">Cotizar</button>
+      <button class="btn" (click)="doQuote()" [disabled]="busy() || targetCtl.invalid">Cotizar</button>
     </div>
 
     <div class="card">
