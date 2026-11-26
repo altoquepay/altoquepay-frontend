@@ -42,6 +42,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./iam/pages/change-password/change-password.page').then((m) => m.ChangePasswordPage),
   },
+  {
+    // Sin guard: la necesita sobre todo quien no puede iniciar sesión.
+    path: 'help',
+    loadComponent: () => import('./support/pages/help/help.page').then((m) => m.HelpPage),
+  },
 
   // ---------- Bodega (STORE_ADMIN) ----------
   {

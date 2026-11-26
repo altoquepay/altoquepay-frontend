@@ -32,6 +32,7 @@
   <a class="btn outline block" routerLink="/activate"><app-icon name="key" [size]="18" /> Soy cliente: activar mi acceso con un código</a>
   <div class="auth-foot">
     <span>¿No tienes una cuenta? <a routerLink="/register">Regístrate</a></span>
+    <a routerLink="/help">Ayuda y soporte</a>
     @if (online() === false) {
       <span class="small text-bad">No hay conexión con el servidor de AlToque Pay.</span>
     }

@@ -52,6 +52,7 @@
               @if (auth.role() === 'STORE_ADMIN') {
                 <a role="menuitem" routerLink="/store/profile" (click)="closeMenus()"><app-icon name="settings" [size]="17" /> Perfil del negocio</a>
               }
+              <a role="menuitem" routerLink="/help" (click)="closeMenus()"><app-icon name="info" [size]="17" /> Ayuda y soporte</a>
               <a role="menuitem" routerLink="/change-password" (click)="closeMenus()"><app-icon name="lock" [size]="17" /> Cambiar contraseña</a>
               <button type="button" role="menuitem" class="danger" (click)="auth.logout()"><app-icon name="logout" [size]="17" /> Cerrar sesión</button>
             </div>
