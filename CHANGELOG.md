@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-26
+
 ### Added
 - **Catalog**: *Volver a vender* on the page of an inactive product reactivates it with `PATCH /products/{id}/reactivate` (backend `0.8.0`).
 - **Customers**: *Reactivar* on the page of an inactive customer account lets it buy on credit again, with its current terms, through `PATCH /customers/{id}/reactivate` (backend `0.8.0`).
