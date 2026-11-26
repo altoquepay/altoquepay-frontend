@@ -1,0 +1,247 @@
+// ---------- Formularios ----------
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+
+  &.two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &.three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    &.two,
+    &.three {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// El texto del label y sus marcas (*, opcional, ayuda) fluyen en línea; el control va debajo.
+label.field,
+.field {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink-2);
+
+  small,
+  .opt {
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .req {
+    color: var(--bad);
+  }
+
+  .hint {
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .hint.bad {
+    display: block;
+    margin-top: 4px;
+    color: var(--bad);
+  }
+
+  > input,
+  > select,
+  > textarea,
+  > .input-icon {
+    display: block;
+    margin-top: 6px;
+  }
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  font-size: 0.93rem;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  width: 100%;
+  min-height: 42px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+
+  &::placeholder {
+    color: #9aa7b6;
+  }
+
+  &:hover {
+    border-color: var(--line-strong);
+  }
+
+  &:focus {
+    outline: none;
+    background: #fff;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(26, 194, 174, 0.15);
+  }
+
+  &:disabled,
+  &[readonly] {
+    background: #eef2f6;
+    color: var(--ink-2);
+  }
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7a8c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 34px;
+}
+
+textarea {
+  min-height: 84px;
+  resize: vertical;
+}
+
+input.ng-invalid.ng-touched,
+select.ng-invalid.ng-touched {
+  border-color: var(--bad);
+}
+
+// Campo con icono a la izquierda y botón opcional a la derecha
+.input-icon {
+  position: relative;
+  display: block;
+
+  > app-icon:first-child {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8a98a8;
+    pointer-events: none;
+  }
+
+  input,
+  select {
+    padding-left: 38px;
+  }
+
+  .suffix {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.86rem;
+    pointer-events: none;
+  }
+
+  .icon-btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  &.has-suffix input {
+    padding-right: 36px;
+  }
+}
+
+.check {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+
+  input {
+    width: 18px;
+    height: 18px;
+    min-height: 0;
+    padding: 0;
+    accent-color: var(--brand);
+  }
+}
+
+// Tarjetas-radio ("Cuotas semanales" / "Fecha determinada")
+.option-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.option-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  input {
+    width: 18px;
+    height: 18px;
+    min-height: 0;
+    padding: 0;
+    accent-color: var(--brand);
+  }
+
+  strong {
+    display: block;
+    font-size: 0.93rem;
+  }
+
+  small {
+    color: var(--muted);
+  }
+
+  &.selected {
+    border-color: var(--brand);
+    background: var(--brand-softer);
+  }
+}
+
+// ---------- Filtros ----------
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 14px;
+
+  .grow {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  input,
+  select {
+    width: auto;
+    min-width: 150px;
+  }
+
+  .grow input {
+    width: 100%;
+  }
+}
+
+.filters {
+  @extend .toolbar;
+}

@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+
+.grid.with-detail {
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+
+  @media (max-width: 1180px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detail {
+  position: sticky;
+  top: calc(var(--topbar-h) + 16px);
+}
+
+.person {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  small {
+    color: var(--muted);
+  }
+}
+
+.nowrap {
+  white-space: nowrap;
+}

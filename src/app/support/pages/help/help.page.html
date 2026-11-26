@@ -1,0 +1,37 @@
+<app-auth-layout>
+  <h2>Ayuda y soporte</h2>
+  <p class="lead">Respuestas rápidas y cómo escribirnos</p>
+  <div class="faq">
+    <details>
+      <summary>Soy cliente, ¿cómo entro por primera vez?</summary>
+      <p>Pide a tu bodega tu código de acceso. En el inicio de sesión elige «Soy cliente: activar mi acceso con un código», escribe tu DNI y el código, y crea tu contraseña.
+        <a routerLink="/activate">Activar mi acceso</a></p>
+    </details>
+    <details>
+      <summary>Olvidé mi contraseña</summary>
+      <p>Si administras una bodega, usa «¿Olvidaste tu contraseña?» en el inicio de sesión y sigue el enlace que llega a tu correo. Si eres cliente, pide un código nuevo a una bodega que ya ves en tu portal y actívalo otra vez; las demás bodegas se vuelven a agregar con sus códigos.</p>
+    </details>
+    <details>
+      <summary>¿Cómo agrego otra bodega a mi portal?</summary>
+      <p>Pide a esa bodega tu código de acceso (vale 48 horas) y escríbelo en «Agregar otra bodega», dentro de tu portal.</p>
+    </details>
+    <details>
+      <summary>¿Qué diferencia hay entre fecha fija y cuotas semanales?</summary>
+      <p>Con fecha fija, las compras hechas hasta el día de corte se pagan juntas en la fecha de pago de la bodega. Con cuotas semanales, la compra se divide en cuotas iguales, una cada 7 días.</p>
+    </details>
+    <details>
+      <summary>No puedo registrar ventas: «no hay un tope BCRP vigente»</summary>
+      <p>El tope de tasas del BCRP lo registra el equipo de AlToque Pay. Escríbenos para que lo registre.</p>
+    </details>
+    <details>
+      <summary>Mi bodega fue desactivada, o una bodega no puede restaurar mi acceso</summary>
+      <p>Escríbenos con el RUC de tu bodega, o con tu DNI si eres cliente, y lo revisamos.</p>
+    </details>
+  </div>
+  <p class="contact">
+    <app-icon name="mail" [size]="18" />
+    <span>¿Necesitas algo más? Escríbenos a <a [href]="'mailto:' + supportEmail">{{ supportEmail }}</a></span>
+  </p>
+  <p class="muted small">Nunca te pediremos tu contraseña.</p>
+  <div class="auth-foot"><a class="back-link" [routerLink]="backLink()">Volver</a></div>
+</app-auth-layout>

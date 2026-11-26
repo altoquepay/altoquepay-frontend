@@ -1,0 +1,59 @@
+<div class="page-head">
+  <div><h1>Registrar cobro</h1><p>Los pagos se registran con la fecha de hoy en Lima ({{ today | fecha }}). No hay pagos parciales.</p></div>
+  <a class="btn ghost" routerLink="/store/payments">Ver pagos</a>
+</div>
+
+@if (done(); as d) {
+  <div class="card">
+    <div class="alert success">Pago #{{ d.id }} registrado por <strong>{{ d.total | soles }}</strong>.</div>
+    <dl class="kv">
+      <dt>Tipo</dt><dd>{{ d.kind | label }}</dd>
+      <dt>Mora</dt><dd>{{ d.late_interest | soles }}</dd>
+      <dt>Interés</dt><dd>{{ d.ordinary_interest | soles }}</dd>
+      <dt>Capital</dt><dd>{{ d.principal | soles }}</dd>
+      <dt>Ahorro del cliente</dt><dd>{{ d.savings | soles }}</dd>
+    </dl>
+    <div class="actions" style="margin-top: 16px">
+      <a class="btn ghost" [routerLink]="['/store/customers', d.customer_id]">Ver cliente</a>
+      <button class="btn" (click)="reset()">Registrar otro cobro</button>
+    </div>
+  </div>
+} @else {
+  <div class="grid cols-2" style="align-items: start">
+    <div class="card form">
+      <h2>1. ¿Qué se paga?</h2>
+      <label class="field">Tipo de pago
+        <select [(ngModel)]="kind" (ngModelChange)="quote.set(null)">
+          @for (k of kinds; track k.kind) { <option [value]="k.kind">{{ k.label }}</option> }
+        </select>
+        <small>{{ info().help }}</small>
+      </label>
+      <label class="field">{{ info().targetLabel }}
+        <input type="number" min="1" [(ngModel)]="targetId" (ngModelChange)="quote.set(null)" />
+        <small>Puedes llegar aquí con el id ya puesto desde Cuotas, Ciclos o el detalle de una compra.</small>
+      </label>
+      <app-error [message]="error()" />
+      <button class="btn" (click)="doQuote()" [disabled]="busy() || !targetId">Cotizar</button>
+    </div>
+
+    <div class="card">
+      <h2>2. Cotización de hoy</h2>
+      @if (quote(); as q) {
+        <p class="muted small">Cuenta <a [routerLink]="['/store/customers', q.customer_id]">#{{ q.customer_id }}</a> · {{ q.paid_on | fecha }}
+          @if (q.days_late > 0) { · <span class="badge bad">{{ q.days_late }} días de atraso</span> }
+          @if (q.interest_days !== null) { · {{ q.interest_days }} días de interés }
+        </p>
+        <div class="total-line"><span>Interés moratorio</span><span class="num">{{ q.late_interest | soles }}</span></div>
+        <div class="total-line"><span>Interés ordinario</span><span class="num">{{ q.ordinary_interest | soles }}</span></div>
+        <div class="total-line"><span>Capital</span><span class="num">{{ q.principal | soles }}</span></div>
+        <div class="total-line big"><span>Total a cobrar</span><span class="num">{{ q.total | soles }}</span></div>
+        @if (positive(q.savings)) {
+          <div class="alert success" style="margin-top: 10px">El cliente ahorra {{ q.savings | soles }} en intereses por pagar antes.</div>
+        }
+        <button class="btn block" style="margin-top: 12px" (click)="register(q)" [disabled]="busy()">Registrar pago de {{ q.total | soles }}</button>
+      } @else {
+        <p class="muted">Cotiza para ver mora, interés, capital, total y ahorro.</p>
+      }
+    </div>
+  </div>
+}

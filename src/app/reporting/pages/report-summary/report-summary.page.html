@@ -1,0 +1,40 @@
+<div class="page-head">
+  <div><h1>Reporte del período</h1><p>Suma las compras y los pagos entre dos días, ambos incluidos.</p></div>
+</div>
+<form class="filters" (ngSubmit)="load()">
+  <label class="field">Desde<input name="from" type="date" [(ngModel)]="from" required /></label>
+  <label class="field">Hasta<input name="to" type="date" [(ngModel)]="to" required /></label>
+  <button class="btn" [disabled]="!from || !to">Generar</button>
+</form>
+<app-error [message]="error()" />
+@if (r(); as r) {
+  <p class="muted">Del {{ r.from_date | fecha }} al {{ r.to_date | fecha }}</p>
+  <div class="grid cols-4" style="margin-bottom: 16px">
+    <div class="stat"><span class="chip-icon"><app-icon name="cart" /></span><div><div class="label">Ventas al crédito</div><div class="value">{{ r.purchases.amount | soles }}</div><div class="sub">{{ r.purchases.count }} compras</div></div></div>
+    <div class="stat"><span class="chip-icon violet"><app-icon name="percent" /></span><div><div class="label">Interés generado</div><div class="value">{{ r.purchases.ordinary_interest | soles }}</div></div></div>
+    <div class="stat"><span class="chip-icon blue"><app-icon name="cash" /></span><div><div class="label">Cobrado</div><div class="value">{{ r.payments.total | soles }}</div><div class="sub">{{ r.payments.count }} pagos</div></div></div>
+    <div class="stat"><span class="chip-icon green"><app-icon name="trend" /></span><div><div class="label">Ahorro de clientes</div><div class="value">{{ r.payments.savings | soles }}</div></div></div>
+  </div>
+  <div class="grid cols-2">
+    <div class="card">
+      <h2>Compras</h2>
+      <dl class="kv">
+        <dt>Cantidad</dt><dd>{{ r.purchases.count }}</dd>
+        <dt>Fecha única</dt><dd>{{ r.purchases.single_date_count }}</dd>
+        <dt>Semanales</dt><dd>{{ r.purchases.weekly_count }}</dd>
+        <dt>Monto</dt><dd>{{ r.purchases.amount | soles }}</dd>
+        <dt>Interés ordinario</dt><dd>{{ r.purchases.ordinary_interest | soles }}</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h2>Pagos</h2>
+      <dl class="kv">
+        <dt>Cantidad</dt><dd>{{ r.payments.count }}</dd>
+        <dt>Capital</dt><dd>{{ r.payments.principal | soles }}</dd>
+        <dt>Interés ordinario</dt><dd>{{ r.payments.ordinary_interest | soles }}</dd>
+        <dt>Interés moratorio</dt><dd>{{ r.payments.late_interest | soles }}</dd>
+        <dt><strong>Total</strong></dt><dd><strong>{{ r.payments.total | soles }}</strong></dd>
+      </dl>
+    </div>
+  </div>
+}

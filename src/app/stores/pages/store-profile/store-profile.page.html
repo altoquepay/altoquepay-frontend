@@ -1,0 +1,102 @@
+<div class="page-head">
+  <div>
+    <h1>Perfil del negocio</h1>
+    <p>Gestiona la información y preferencias de tu negocio.</p>
+  </div>
+  <div class="breadcrumb"><span>Configuración</span><span>Perfil del negocio</span></div>
+</div>
+
+@if (store(); as s) {
+  <div class="grid cols-2" style="align-items: start">
+    <section class="card">
+      <div class="card-title" style="margin-bottom: 20px">
+        <span class="chip-icon"><app-icon name="store" /></span>
+        <div><h2>Información del negocio</h2><p class="muted small" style="margin: 0">Mantén tus datos actualizados para una mejor gestión.</p></div>
+      </div>
+      <form class="form" (ngSubmit)="save('business')" #fb="ngForm">
+        <app-error [message]="businessError()" />
+        <div class="form-row two">
+          <label class="field">Nombre del negocio <span class="req">*</span>
+            <input name="business_name" [(ngModel)]="m.business_name" required maxlength="150" /></label>
+          <label class="field">RUC
+            <input [value]="s.ruc" readonly title="El RUC no se puede cambiar" /></label>
+        </div>
+        <div class="form-row" style="grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr)">
+          <label class="field">Dirección
+            <span class="input-icon"><app-icon name="pin" [size]="17" />
+              <input name="address" [(ngModel)]="m.address" maxlength="200" placeholder="Av. Los Jardines 123, Lima" /></span></label>
+          <label class="field">Teléfono
+            <span class="input-icon"><app-icon name="phone" [size]="17" />
+              <input name="phone" type="tel" inputmode="tel" [(ngModel)]="m.phone" #phoneCtl="ngModel" maxlength="20" required [pattern]="phonePattern" placeholder="987 654 321" /></span>
+            @if (phoneCtl.invalid && (phoneCtl.dirty || phoneCtl.touched)) { <span class="hint bad">{{ phoneProblem(m.phone) }}</span> }</label>
+        </div>
+        <div class="form-row two">
+          <label class="field">Correo electrónico
+            <span class="input-icon"><app-icon name="mail" [size]="17" /><input [value]="auth.user()?.username ?? ''" readonly /></span></label>
+          <label class="field">Representante o propietario
+            <span class="input-icon"><app-icon name="user" [size]="17" /><input [value]="auth.user()?.full_name ?? ''" readonly /></span></label>
+        </div>
+        <p class="muted small" style="margin: 0">Bodega registrada el {{ s.registered_at | fecha }}.</p>
+        <button class="btn block" [disabled]="saving() !== null || fb.invalid">
+          <app-icon name="save" [size]="18" /> {{ saving() === 'business' ? 'Guardando…' : 'Guardar cambios' }}</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-title" style="margin-bottom: 20px">
+        <span class="chip-icon"><app-icon name="settings" /></span>
+        <div><h2>Preferencias</h2><p class="muted small" style="margin: 0">Condiciones de crédito por defecto para tus clientes nuevos.</p></div>
+      </div>
+      <form class="form" (ngSubmit)="save('preferences')" #fp="ngForm">
+        <app-error [message]="preferencesError()" />
+        <label class="field">Moneda
+          <span class="input-icon"><app-icon name="dollar" [size]="17" /><input value="Soles (S/)" readonly /></span></label>
+        <label class="field">Fecha de corte por defecto <span class="req">*</span>
+          <span class="input-icon"><app-icon name="calendar" [size]="17" />
+            <select name="cutoff" [ngModel]="m.default_cutoff_day" (ngModelChange)="setCutoff($event)">
+              @for (d of cutoffDays; track d) { <option [ngValue]="d">{{ d }} de cada mes</option> }
+            </select></span></label>
+        <label class="field">Fecha de pago por defecto <span class="req">*</span>
+          <span class="input-icon"><app-icon name="calendar" [size]="17" />
+            <select name="payday" [(ngModel)]="m.default_payment_day">
+              @for (d of paymentDays(); track d) { <option [ngValue]="d">{{ d }} de cada mes</option> }
+            </select></span></label>
+        <label class="field">Tipo de tasa por defecto
+          <span class="input-icon"><app-icon name="percent" [size]="17" /><input value="Tasa efectiva anual (TEA)" readonly /></span></label>
+        <div class="form-row two">
+          <label class="field">Tasa de interés (TEA) <span class="req">*</span>
+            <span class="input-icon has-suffix"><app-icon name="bars" [size]="17" />
+              <input name="tea" inputmode="decimal" [(ngModel)]="m.default_tea" required pattern="^\d+(\.\d+)?$" /><span class="suffix">%</span></span></label>
+          <label class="field">Tasa moratoria (TEA) <span class="req">*</span>
+            <span class="input-icon has-suffix"><app-icon name="bars" [size]="17" />
+              <input name="late" inputmode="decimal" [(ngModel)]="m.default_late_tea" required pattern="^\d+(\.\d+)?$" /><span class="suffix">%</span></span></label>
+        </div>
+        @if (cap(); as c) {
+          <p class="muted small" style="margin: -6px 0 0">Tope BCRP vigente: TEA máx. {{ c.max_tea | pct }} · moratoria máx. {{ c.max_late_tea | pct }} (hasta el {{ c.valid_to | fecha }}). 40% se escribe 40.</p>
+        } @else {
+          <p class="small text-bad" style="margin: -6px 0 0">No hay un tope BCRP vigente; pide a soporte que lo registre.</p>
+        }
+        <label class="field">Número máximo de cuotas semanales <span class="req">*</span>
+          <span class="input-icon"><app-icon name="box" [size]="17" />
+            <input name="weeks" type="number" min="1" max="99" [(ngModel)]="m.default_max_weeks" required /></span></label>
+        <button class="btn block" [disabled]="saving() !== null || fp.invalid">
+          <app-icon name="save" [size]="18" /> {{ saving() === 'preferences' ? 'Guardando…' : 'Guardar preferencias' }}</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="card security">
+    <div class="card-title">
+      <span class="chip-icon"><app-icon name="shield" /></span>
+      <div><h2>Seguridad</h2><p class="muted small" style="margin: 0">Protege tu cuenta y mantén tu negocio seguro.</p></div>
+    </div>
+    <div class="actions">
+      <a class="btn outline" routerLink="/change-password"><app-icon name="lock" [size]="17" /> Cambiar contraseña</a>
+      <button type="button" class="btn outline-danger" (click)="auth.logout()"><app-icon name="logout" [size]="17" /> Cerrar sesión</button>
+    </div>
+  </section>
+} @else if (businessError()) {
+  <app-error [message]="businessError()" />
+} @else {
+  <p class="muted">Cargando…</p>
+}

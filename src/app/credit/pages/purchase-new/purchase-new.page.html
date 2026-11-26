@@ -1,0 +1,183 @@
+<div class="page-head">
+  <div>
+    <h1>Registro de nueva compra a crédito</h1>
+    <p>Registra una nueva venta al crédito y define sus condiciones de pago.</p>
+  </div>
+</div>
+
+<div class="grid cols-2" style="align-items: start">
+  <!-- Información de la compra -->
+  <section class="card">
+    <h2 style="margin-bottom: 18px">Información de la compra</h2>
+    <div class="form">
+      <div class="field">Seleccionar cliente <span class="req">*</span></div>
+      @if (customer() && !pickingCustomer()) {
+        @let c = customer()!;
+        <div class="client-row">
+          <button type="button" class="selected-box client" (click)="changeCustomer()" aria-label="Cambiar cliente">
+            <span class="avatar">{{ initials(c.first_names + ' ' + c.last_names) }}</span>
+            <span><strong>{{ c.first_names }} {{ c.last_names }}</strong><small>DNI {{ c.dni }}</small></span>
+            <app-icon name="chevron-down" [size]="18" />
+          </button>
+          <div class="credit-chip">
+            <div><span class="chip-icon sm green"><app-icon name="wallet" [size]="17" /></span>
+              <span><small>Línea de crédito</small><strong>{{ c.credit_limit | soles }}</strong></span></div>
+            <div><span class="chip-icon sm blue"><app-icon name="percent" [size]="17" /></span>
+              <span><small>TEA</small><strong>{{ c.tea | pct }}</strong></span></div>
+          </div>
+        </div>
+        @if (c.status !== 'ACTIVE') {
+          <div class="alert error"><app-icon name="ban" [size]="18" /><span>Esta cuenta está inactiva: no puede comprar al crédito.</span></div>
+        }
+      } @else {
+        <div>
+          <span class="input-icon"><app-icon name="search" [size]="18" />
+            <input placeholder="Buscar cliente por DNI o nombre" (input)="customerSearch$.next($any($event.target).value)" aria-label="Buscar cliente" /></span>
+          @if (customerResults().length) {
+            <div class="search-results">
+              @for (r of customerResults(); track r.id) {
+                <button type="button" (click)="pickCustomer(r)">
+                  <span class="cell-person"><span class="avatar">{{ initials(r.first_names + ' ' + r.last_names) }}</span>
+                    {{ r.first_names }} {{ r.last_names }}</span>
+                  <span class="muted mono">{{ r.dni }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <div class="field">Producto o servicio <span class="req">*</span></div>
+      <div class="product-search">
+        <span class="input-icon"><app-icon name="search" [size]="18" />
+          <input placeholder="Buscar producto por código o descripción" [(ngModel)]="productQuery"
+                 (ngModelChange)="productSearch$.next($event)" (focus)="showProducts.set(true)" aria-label="Buscar producto" /></span>
+        @if (showProducts() && productResults().length) {
+          <div class="search-results">
+            @for (p of productResults(); track p.id) {
+              <button type="button" (click)="addProduct(p)">
+                <span><span class="mono muted">{{ p.code }}</span> {{ p.description }} <span class="muted">· {{ p.category }}</span></span>
+                <strong>{{ p.list_price | soles }}</strong>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (cart().length) {
+        <div class="cart">
+          <div class="cart-line head"><span>Producto</span><span>Cantidad</span><span class="right">Monto</span><span></span></div>
+          @for (l of cart(); track l.product.id) {
+            <div class="cart-line">
+              <div><strong>{{ l.product.description }}</strong>
+                <div class="small muted">{{ l.product.category }} · {{ l.product.list_price | soles }} c/u</div></div>
+              <input type="number" min="1" max="10000" [ngModel]="l.quantity" (ngModelChange)="setQty(l, $event)" aria-label="Cantidad" />
+              <div class="num strong">{{ lineTotal(l) | soles }}</div>
+              <button type="button" class="icon-btn" (click)="remove(l)" aria-label="Quitar producto"><app-icon name="x" [size]="16" /></button>
+            </div>
+          }
+          <div class="total-line"><span class="muted">Monto de compra (precio de lista)</span><strong>{{ estimated() | soles }}</strong></div>
+        </div>
+      } @else {
+        <p class="muted small" style="margin: 0">Agrega al menos un producto.</p>
+      }
+
+      <label class="field" style="max-width: 260px">Fecha de compra <span class="hint">hora de Lima</span>
+        <input type="datetime-local" [(ngModel)]="purchasedAt" [max]="maxDate" (ngModelChange)="changed()" />
+      </label>
+    </div>
+  </section>
+
+  <!-- Condiciones de pago -->
+  <section class="card">
+    <h2 style="margin-bottom: 18px">Condiciones de pago</h2>
+    <div class="form">
+      <div class="field">Modalidad de pago <span class="req">*</span></div>
+      <div class="option-cards" role="radiogroup" aria-label="Modalidad de pago">
+        <label class="option-card" [class.selected]="mode() === 'WEEKLY'">
+          <input type="radio" name="mode" [checked]="mode() === 'WEEKLY'" (change)="setMode('WEEKLY')" />
+          <span><strong>Cuotas semanales</strong><small>Pago en varias cuotas</small></span>
+        </label>
+        <label class="option-card" [class.selected]="mode() === 'SINGLE_DATE'">
+          <input type="radio" name="mode" [checked]="mode() === 'SINGLE_DATE'" (change)="setMode('SINGLE_DATE')" />
+          <span><strong>Fecha determinada</strong><small>Pago en una sola fecha</small></span>
+        </label>
+      </div>
+
+      @let acc = customer();
+      <div class="form-row two">
+        <label class="field">Día de corte
+          <span class="input-icon"><app-icon name="calendar" [size]="17" /><input [value]="acc ? acc.cutoff_day + ' de cada mes' : '—'" readonly /></span></label>
+        <label class="field">Día de pago
+          <span class="input-icon"><app-icon name="calendar" [size]="17" /><input [value]="acc ? acc.payment_day + ' de cada mes' : '—'" readonly /></span></label>
+      </div>
+      <div class="form-row three">
+        <label class="field">Tipo de tasa<input value="Efectiva anual (TEA)" readonly /></label>
+        <label class="field">TEA
+          <span class="input-icon has-suffix"><app-icon name="percent" [size]="17" /><input [value]="acc?.tea ?? '—'" readonly /><span class="suffix">%</span></span></label>
+        <label class="field">Tasa moratoria
+          <span class="input-icon has-suffix"><app-icon name="percent" [size]="17" /><input [value]="acc?.late_tea ?? '—'" readonly /><span class="suffix">%</span></span></label>
+      </div>
+      <div class="form-row two">
+        <label class="field">Moneda<input value="Soles (S/)" readonly /></label>
+        @if (mode() === 'WEEKLY') {
+          <label class="field">Número de cuotas <span class="req">*</span>
+            <select [ngModel]="installments()" (ngModelChange)="setInstallments($event)">
+              @for (n of weekOptions(); track n) { <option [ngValue]="n">{{ n }}</option> }
+            </select>
+          </label>
+        }
+      </div>
+      <p class="muted small" style="margin: -4px 0 0">Las tasas y fechas salen de las condiciones del cliente; cámbialas en Clientes.</p>
+
+      @if (mode() === 'WEEKLY') {
+        <div class="info-box">
+          <span class="chip-icon sm blue"><app-icon name="info" [size]="17" /></span>
+          <div style="flex: 1"><strong>Período de gracia</strong>
+            <small>Si la compra es antes del corte, el interés hasta la primera cuota se capitaliza (gracia total).</small></div>
+          <span class="badge info">{{ sim()?.grace_days !== null && sim()?.grace_days !== undefined ? sim()!.grace_days + ' días' : 'Gracia total' }}</span>
+        </div>
+      }
+    </div>
+  </section>
+</div>
+
+<!-- Resumen -->
+<section class="card">
+  <div class="card-head" style="margin-bottom: 14px">
+    <h2>Resumen de la compra a crédito</h2>
+    @if (simulating()) { <span class="muted small">Calculando…</span> }
+  </div>
+  <app-error [message]="error()" />
+  @let s = sim();
+  <div class="summary-bar">
+    <div><span class="chip-icon sm"><app-icon name="cart" [size]="17" /></span>
+      <div><div class="label">Monto financiado</div><div class="value">{{ s ? (s.capitalized_amount ?? s.amount | soles) : '—' }}</div></div></div>
+    <div><span class="chip-icon sm violet"><app-icon name="percent" [size]="17" /></span>
+      <div><div class="label">Interés estimado</div><div class="value">{{ s ? (s.ordinary_interest | soles) : '—' }}</div></div></div>
+    <div><span class="chip-icon sm blue"><app-icon name="file" [size]="17" /></span>
+      <div><div class="label">Total a pagar</div><div class="value">{{ s ? (s.total | soles) : '—' }}</div></div></div>
+    <div><span class="chip-icon sm"><app-icon name="calendar" [size]="17" /></span>
+      @if (s && s.mode === 'WEEKLY') {
+        <div><div class="label">Cuota estimada ({{ s.installments_count }} cuotas)</div><div class="value">{{ s.installment_amount | soles }}</div></div>
+      } @else {
+        <div><div class="label">Plazo</div><div class="value">{{ s?.term_days !== null && s?.term_days !== undefined ? s!.term_days + ' días' : '—' }}</div></div>
+      }
+    </div>
+  </div>
+  @if (!s && !error()) {
+    <p class="muted small" style="margin: 14px 0 0">Elige un cliente y al menos un producto para ver el cálculo.</p>
+  }
+</section>
+
+@if (sim()?.installments?.length) {
+  <h2 style="margin: 4px 0 12px">Cronograma de cuotas</h2>
+  <app-schedule-table [items]="sim()!.installments" [showStatus]="false" />
+}
+
+<div class="actions footer">
+  <a class="btn outline" routerLink="/store/purchases">Cancelar</a>
+  <button class="btn" (click)="register()" [disabled]="busy() || !sim() || simulating()">
+    <app-icon name="file" [size]="18" /> {{ busy() ? 'Registrando…' : 'Registrar compra' }}
+  </button>
+</div>

@@ -1,0 +1,56 @@
+// Tokens del diseño de AlToque Pay (tomados de los mockups).
+:root {
+  // Marca
+  --brand: #1ac2ae;
+  --brand-hover: #15ad9b;
+  --brand-ink: #ffffff;
+  --brand-bright: #00dfc4;
+  --brand-soft: #e3f6f3;
+  --brand-softer: #f0fbf9;
+
+  // Navegación oscura
+  --nav-top: #081a2e;
+  --nav-bottom: #083844;
+  --nav-ink: #c9d7e0;
+  --nav-muted: #8ea6b4;
+
+  // Superficies y texto
+  --bg: #f3f6fa;
+  --surface: #ffffff;
+  --surface-muted: #f7f9fc;
+  --field: #f8fafc;
+  --line: #e6ebf1;
+  --line-strong: #d6dee7;
+  --ink: #0f1b2d;
+  --ink-2: #344256;
+  --muted: #6b7a8c;
+
+  // Estados
+  --ok: #138a63;
+  --ok-soft: #e3f6ec;
+  --info: #2f7fb5;
+  --info-soft: #e4f1fa;
+  --warn: #b26a1d;
+  --warn-soft: #fdf1df;
+  --bad: #d23b3b;
+  --bad-soft: #fdecec;
+  --violet: #8b5cf6;
+  --violet-soft: #f1ebff;
+
+  // Tarjetas de dashboard
+  --tint-blue: #eff8fe;
+  --tint-green: #ecfbf8;
+  --tint-yellow: #fefcf3;
+  --tint-red: #fff5f5;
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --shadow-sm: 0 1px 2px rgba(15, 27, 45, 0.05);
+  --shadow: 0 1px 2px rgba(15, 27, 45, 0.04), 0 6px 20px rgba(15, 27, 45, 0.05);
+  --shadow-lg: 0 20px 50px rgba(15, 27, 45, 0.12);
+
+  --font: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --sidebar-w: 236px;
+  --topbar-h: 64px;
+}

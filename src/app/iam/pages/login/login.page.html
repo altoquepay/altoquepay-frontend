@@ -1,0 +1,40 @@
+<app-auth-layout>
+  <h2>Inicia sesión</h2>
+  <p class="lead">Ingresa tus credenciales para acceder a AlToque Pay</p>
+  <app-error [message]="error()" />
+  <form class="form" (ngSubmit)="submit()" #f="ngForm">
+    <label class="field">Correo electrónico o DNI
+      <span class="input-icon">
+        <app-icon name="mail" [size]="18" />
+        <input name="username" [(ngModel)]="username" required autocomplete="username" placeholder="tu@correo.com o tu DNI" />
+      </span>
+    </label>
+    <label class="field">Contraseña
+      <span class="input-icon has-suffix">
+        <app-icon name="lock" [size]="18" />
+        <input name="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" required
+               autocomplete="current-password" placeholder="Ingresa tu contraseña" />
+        <button type="button" class="icon-btn" (click)="showPassword.set(!showPassword())"
+                [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+          <app-icon [name]="showPassword() ? 'eye' : 'eye-off'" [size]="18" />
+        </button>
+      </span>
+    </label>
+    <div class="auth-row">
+      <label class="check"><input type="checkbox" name="remember" [(ngModel)]="remember" /> Recordarme</label>
+      <a routerLink="/forgot-password">¿Olvidaste tu contraseña?</a>
+    </div>
+    <button class="btn block lg" [disabled]="loading() || f.invalid">
+      {{ loading() ? 'Ingresando…' : 'Iniciar sesión' }} <app-icon name="arrow-right" [size]="18" />
+    </button>
+  </form>
+  <div class="divider">o</div>
+  <a class="btn outline block" routerLink="/activate"><app-icon name="key" [size]="18" /> Soy cliente: activar mi acceso con un código</a>
+  <div class="auth-foot">
+    <span>¿No tienes una cuenta? <a routerLink="/register">Regístrate</a></span>
+    <a routerLink="/help">Ayuda y soporte</a>
+    @if (online() === false) {
+      <span class="small text-bad">No hay conexión con el servidor de AlToque Pay.</span>
+    }
+  </div>
+</app-auth-layout>

@@ -1,1 +1,6 @@
-/* You can add global styles to this file, and also import other style files */
+// Estilos globales de AlToque Pay. Los tokens viven en styles/_tokens.scss.
+@use 'styles/tokens';
+@use 'styles/base';
+@use 'styles/forms';
+@use 'styles/components';
+@use 'styles/auth';

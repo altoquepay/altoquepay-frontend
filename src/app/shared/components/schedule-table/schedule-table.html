@@ -1,0 +1,19 @@
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>N°</th><th>Vence</th><th class="right">Saldo inicial</th><th class="right">Interés</th><th class="right">Amortización</th>
+        <th class="right">Cuota</th><th class="right">Saldo final</th>@if (showStatus()) { <th>Estado</th> }</tr>
+    </thead>
+    <tbody>
+      @for (i of items(); track i.number) {
+        <tr>
+          <td>{{ i.number }}</td><td>{{ i.due_date | fecha }}</td>
+          <td class="num">{{ i.opening_balance | soles }}</td><td class="num">{{ i.interest | soles }}</td>
+          <td class="num">{{ i.amortization | soles }}</td><td class="num"><strong>{{ i.amount | soles }}</strong></td>
+          <td class="num">{{ i.closing_balance | soles }}</td>
+          @if (showStatus()) { <td><app-badge [value]="i.status" /></td> }
+        </tr>
+      } @empty { <tr><td colspan="8" class="empty">Sin cuotas (compra de fecha única).</td></tr> }
+    </tbody>
+  </table>
+</div>

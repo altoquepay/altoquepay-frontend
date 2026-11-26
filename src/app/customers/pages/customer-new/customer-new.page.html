@@ -1,0 +1,68 @@
+<div class="page-head">
+  <div><h1>Nuevo cliente</h1><p>Abre la cuenta de crédito de una persona en tu bodega.</p></div>
+  <a class="btn ghost" routerLink="/store/customers">Volver</a>
+</div>
+
+@if (opened(); as o) {
+  <div class="card">
+    <h2>Cuenta abierta para {{ o.account.first_names }} {{ o.account.last_names }}</h2>
+    <app-access-code [code]="o.access_code" [who]="o.account.first_names" />
+    <div class="actions" style="margin-top: 16px">
+      <a class="btn" [routerLink]="['/store/purchases/new']" [queryParams]="{ customer: o.account.id }">Registrar una venta</a>
+      <a class="btn ghost" [routerLink]="['/store/customers', o.account.id]">Ver cliente</a>
+      <button class="btn ghost" (click)="reset()">Agregar otro cliente</button>
+    </div>
+  </div>
+} @else {
+  <div class="card">
+    <h2>1. Buscar por DNI</h2>
+    <form class="filters" (ngSubmit)="lookup()" style="margin: 0">
+      <input name="dni" placeholder="DNI (8 dígitos)" [(ngModel)]="dni" required pattern="\d{8}" maxlength="8" inputmode="numeric" />
+      <button class="btn" [disabled]="looking() || !validDni()">Buscar</button>
+    </form>
+    @if (lookupDone()) {
+      @if (person(); as p) {
+        @if (p.account_id) {
+          <div class="alert info" style="margin-top: 12px">Esta persona ya es cliente de tu bodega.
+            <a [routerLink]="['/store/customers', p.account_id]">Ver su cuenta</a></div>
+        } @else if (p.notice === 'PERSON_HAS_ACCOUNT') {
+          <div class="alert warn" style="margin-top: 12px">Aviso: esta persona ya compra al crédito en otra bodega. Puedes abrirle una cuenta igual.</div>
+        } @else {
+          <div class="alert info" style="margin-top: 12px">La persona ya está registrada en AlToque Pay.</div>
+        }
+      } @else {
+        <div class="alert info" style="margin-top: 12px">Persona nueva: completa sus datos.</div>
+      }
+    }
+  </div>
+
+  @if (lookupDone() && !person()?.account_id) {
+    <form class="card form" (ngSubmit)="submit()" #f="ngForm">
+      <h2>2. Datos y condiciones</h2>
+      <app-error [message]="error()" />
+      <div class="form-row">
+        <label class="field">Nombres<input name="first" [(ngModel)]="m.first_names" required maxlength="100" /></label>
+        <label class="field">Apellidos<input name="last" [(ngModel)]="m.last_names" required maxlength="100" /></label>
+      </div>
+      <div class="form-row">
+        <label class="field">Teléfono<input name="phone" type="tel" inputmode="tel" [(ngModel)]="m.phone" #phoneCtl="ngModel" maxlength="20" required [pattern]="phonePattern" placeholder="987 654 321" />
+          @if (phoneCtl.invalid && (phoneCtl.dirty || phoneCtl.touched)) { <span class="hint bad">{{ phoneProblem(m.phone) }}</span> }</label>
+        <label class="field">Dirección<input name="address" [(ngModel)]="m.address" maxlength="200" /></label>
+      </div>
+      <div class="form-row">
+        <label class="field">Límite de crédito (S/)
+          <input name="limit" inputmode="decimal" [(ngModel)]="m.credit_limit" required pattern="^\d+(\.\d{1,2})?$" placeholder="1500" />
+        </label>
+      </div>
+      <p class="muted small" style="margin: 0">Deja vacío lo que quieras tomar de los valores de tu bodega.</p>
+      <div class="form-row">
+        <label class="field">Día de corte<input name="cutoff" type="number" min="1" max="25" [(ngModel)]="m.cutoff_day" [placeholder]="store()?.default_cutoff_day ?? ''" /></label>
+        <label class="field">Día de pago<input name="payday" type="number" min="2" max="31" [(ngModel)]="m.payment_day" [placeholder]="store()?.default_payment_day ?? ''" /></label>
+        <label class="field">TEA (%)<input name="tea" inputmode="decimal" [(ngModel)]="m.tea" [placeholder]="store()?.default_tea ?? ''" /></label>
+        <label class="field">TEA moratoria (%)<input name="late" inputmode="decimal" [(ngModel)]="m.late_tea" [placeholder]="store()?.default_late_tea ?? ''" /></label>
+        <label class="field">Semanas máx.<input name="weeks" type="number" min="1" max="99" [(ngModel)]="m.max_weeks" [placeholder]="store()?.default_max_weeks ?? ''" /></label>
+      </div>
+      <div class="actions"><button class="btn" [disabled]="saving() || f.invalid">Abrir cuenta</button></div>
+    </form>
+  }
+}

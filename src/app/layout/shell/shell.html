@@ -1,0 +1,67 @@
+<div class="shell" [class.open]="menuOpen()">
+  <aside class="sidebar" aria-label="Menú principal">
+    <a class="sidebar-brand" [routerLink]="nav()[0]?.path ?? '/'" (click)="closeMenus()">
+      <img src="images/logo.png" alt="AlToque Pay" width="118" />
+    </a>
+    <nav>
+      @for (item of nav(); track item.path) {
+        <a [routerLink]="item.path" [class.active]="activePath() === item.path"
+           [attr.aria-current]="activePath() === item.path ? 'page' : null" (click)="closeMenus()">
+          <app-icon [name]="item.icon" [size]="19" />{{ item.label }}
+        </a>
+      }
+    </nav>
+    <p class="tagline">Tu negocio al día,<br /><span>sin complicaciones</span></p>
+  </aside>
+  <div class="backdrop" (click)="closeMenus()"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="icon-btn" (click)="menuOpen.set(!menuOpen())" aria-label="Abrir menú">
+        <app-icon name="menu" />
+      </button>
+      <div class="store">
+        <span class="chip-icon sm"><app-icon name="store" [size]="18" /></span>
+        <div>
+          <strong>{{ title() }}</strong>
+          <small>{{ subtitle() }}</small>
+        </div>
+      </div>
+      <div class="topbar-right">
+        @if (auth.role() === 'STORE_ADMIN') {
+          <a class="icon-btn" routerLink="/store/payments" [attr.aria-label]="overdue() ? overdue() + ' pagos vencidos' : 'Pagos'">
+            <app-icon name="bell" />
+            @if (overdue() > 0) { <span class="dot"></span> }
+          </a>
+        }
+        <div class="user">
+          <button type="button" class="user-btn" (click)="userMenuOpen.set(!userMenuOpen())" [attr.aria-expanded]="userMenuOpen()">
+            <span class="avatar brand">{{ initials() }}</span>
+            <span class="user-text">
+              <strong>{{ displayName() }}</strong>
+              <small>{{ auth.role() | label }}</small>
+            </span>
+            <app-icon name="chevron-down" [size]="16" />
+          </button>
+          @if (userMenuOpen()) {
+            <div class="user-menu" role="menu">
+              <div class="user-menu-head">
+                <strong>{{ displayName() }}</strong>
+                <small>{{ auth.user()?.username }}</small>
+              </div>
+              @if (auth.role() === 'STORE_ADMIN') {
+                <a role="menuitem" routerLink="/store/profile" (click)="closeMenus()"><app-icon name="settings" [size]="17" /> Perfil del negocio</a>
+              }
+              <a role="menuitem" routerLink="/help" (click)="closeMenus()"><app-icon name="info" [size]="17" /> Ayuda y soporte</a>
+              <a role="menuitem" routerLink="/change-password" (click)="closeMenus()"><app-icon name="lock" [size]="17" /> Cambiar contraseña</a>
+              <button type="button" role="menuitem" class="danger" (click)="auth.logout()"><app-icon name="logout" [size]="17" /> Cerrar sesión</button>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+    <main class="content" (click)="userMenuOpen.set(false)">
+      <router-outlet />
+    </main>
+  </div>
+</div>

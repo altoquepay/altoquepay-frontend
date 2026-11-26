@@ -2,13 +2,13 @@
 
 Web frontend of **AlToquePay**, a web application for small neighborhood businesses (corner stores, bakeries, butcher shops, hair salons and similar) to manage the credit they grant to their customers. It replaces the paper notebook with a digital, automated record of customers, credit purchases, payment schedules and late payments.
 
-> **Status:** early development (`0.x`). Only the Angular project scaffold exists so far. The features below describe the planned scope, taken from the project report.
+> **Status:** early development (`0.x`). Every screen of the first release is built on top of [altoquepay-backend](https://github.com/altoquepay/altoquepay-backend) API `0.9.0`, covering its 54 endpoints. The UI is in Spanish.
 
 ## Overview
 
 In Peru, selling on credit ("fiado") is common in small businesses, but it is usually tracked on paper. Interest is often not calculated for the time elapsed and late payments are not tracked, so merchants lose profitability. AlToquePay digitalizes that relationship while applying rigorous financial calculations.
 
-## Planned features
+## Features
 
 - **Business profile and preferences:** default currency (PEN), cut-off day, payment day, rate type, default rates and maximum number of installments.
 - **Customer management:** customers with a credit line, available credit and individual credit conditions.
@@ -54,9 +54,61 @@ Late-payment interest is calculated on the overdue amount using the late-payment
 - Personal Data Protection Law (Law No. 29733) and its regulation (Supreme Decree No. 016-2024-JUS)
 - BCRP maximum conventional interest rates
 
+## Roles and screens
+
+| Role | Screens |
+| --- | --- |
+| Public | Sign in (email or DNI), store registration, forgot and reset password (`/reset-password?token=…`), customer access-code activation (`/activate`), help and support (`/help`) |
+| `STORE_ADMIN` | Dashboard, store profile and default credit conditions, customers (DNI lookup, account opening with access code, edit, deactivate, reactivate, new access code), products (with image upload, deactivate and reactivate), new credit sale (simulate, then register), purchases (detail, schedule, void), installments, cycles and account statements (with PDF), payments (quote, then register) and period report |
+| `CUSTOMER` | Customer portal: linked stores, available credit, pending installments, purchases and their schedules, monthly statements, link another store with a code |
+| `SYSTEM_ADMIN` | Stores (deactivate, reactivate), BCRP rate caps and trusted store for a customer |
+
+Every signed-in user can change their password and open *Ayuda y soporte* from the user menu. When `must_change_password` is `true`, the app sends the user to that screen first.
+
+## Design
+
+The UI follows the team mockups: a dark sidebar with the logo, white cards on a light background and the teal brand color (`#1AC2AE`). The design tokens live in `src/styles/_tokens.scss`, and the shared styles in the other partials of `src/styles/`. Icons are drawn by the `Icon` component (`<app-icon name="users" />`). The logo in `public/images/logo.png` was cut out of the mockups; replace it with the original file for a sharper image.
+
+## Project structure
+
+The `src/app` folders follow the bounded contexts of the backend:
+
+```text
+src/app/
+  core/          errors (API error codes in Spanish), guards and the auth interceptor
+  shared/        components (icon, pager, badge, error alert, toasts, schedule table), pipes, models, services and utils
+  layout/        shell with the side menu for each role
+  iam/           sign in, passwords and access codes; AuthService
+  stores/        store registration, profile and administration
+  customers/     customer accounts, access codes and trusted store
+  catalog/       products and their images
+  credit/        credit purchases and weekly installments
+  billing/       cycles, account statements and payments
+  reporting/     dashboard, period report and customer portal
+  regulation/    BCRP rate caps
+  support/       help and support page
+```
+
+Each context has `model/` (API resources), `services/` (one service per API area) and `pages/` (routed screens: `name.page.ts`, `name.page.html`, `name.page.scss`). Routes are lazy loaded from `app.routes.ts`.
+
+## API
+
+| Environment | File | API base URL |
+| --- | --- | --- |
+| Development (`npm start`) | `src/environments/environment.development.ts` | `http://localhost:8000/api/v1` |
+| Production (`npm run build`) | `src/environments/environment.ts` | `https://altoquepay.duckdns.org/api/v1` |
+
+To run the frontend locally against the team server, use `npx ng serve --configuration team-server`.
+
+- The backend only accepts browser requests from `CORS_ORIGINS`, which today is `http://localhost:4200`. Keep that port, and ask for the published URL of the frontend to be added when it is deployed.
+- The sign-in screen shows whether `GET /health` answers. If it says *sin conexión* while the backend is running, check CORS.
+- Before the first credit sale, the system administrator (`FIRST_ADMIN_EMAIL` in the backend `.env`) must register the BCRP cap in force; otherwise purchases answer `NO_BCRP_CAP_IN_FORCE`.
+
 ## Tech stack
 
-- Angular 22 (standalone components, SCSS, routing)
+- Angular 22 (standalone components, signals, zoneless change detection, SCSS, routing)
+- Template-driven forms and `HttpClient` with a functional interceptor
+- Vitest for unit tests
 - TypeScript
 - npm
 

@@ -1,0 +1,26 @@
+<div class="page-head">
+  <div><h1>Bodegas</h1><p>Las más recientes primero, con su número de clientes.</p></div>
+  <a class="btn ghost" routerLink="/admin/trusted-store">Resolver acceso de un cliente</a>
+</div>
+<app-error [message]="error()" />
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>ID</th><th>Bodega</th><th>RUC</th><th>Registrada</th><th class="right">Clientes</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      @for (s of data()?.items ?? []; track s.id) {
+        <tr>
+          <td>{{ s.id }}</td><td><strong>{{ s.business_name }}</strong></td><td class="mono">{{ s.ruc }}</td>
+          <td>{{ s.registered_at | fecha }}</td><td class="num">{{ s.customers_count }}</td><td><app-badge [value]="s.status" /></td>
+          <td class="right">
+            @if (s.status === 'ACTIVE') {
+              <button class="btn sm outline-danger" [disabled]="busyId() === s.id" (click)="deactivate(s)">Desactivar</button>
+            } @else {
+              <button class="btn sm" [disabled]="busyId() === s.id" (click)="reactivate(s)">Reactivar</button>
+            }
+          </td>
+        </tr>
+      } @empty { <tr><td colspan="7" class="empty">{{ loading() ? 'Cargando…' : 'No hay bodegas.' }}</td></tr> }
+    </tbody>
+  </table>
+</div>
+@if (data(); as d) { <app-pager [page]="d.page" [size]="d.size" [total]="d.total" (pageChange)="load($event)" /> }

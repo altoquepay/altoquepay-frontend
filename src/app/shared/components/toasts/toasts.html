@@ -1,0 +1,5 @@
+<div class="toasts">
+  @for (t of toast.toasts(); track t.id) {
+    <div class="toast" [class]="'toast ' + t.kind" (click)="toast.dismiss(t.id)">{{ t.text }}</div>
+  }
+</div>

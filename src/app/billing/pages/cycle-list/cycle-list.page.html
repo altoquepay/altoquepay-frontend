@@ -1,0 +1,45 @@
+<div class="page-head">
+  <div><h1>Ciclos y estados de cuenta</h1><p>Compras de fecha única agrupadas por mes. Vencido = cerrado y con la fecha de pago pasada.</p></div>
+</div>
+<form class="filters" (ngSubmit)="load(1)">
+  <label class="field">Estado
+    <select name="status" [(ngModel)]="status">
+      <option value="">Todos</option><option value="OPEN">Abiertos</option><option value="CLOSED">Cerrados (por cobrar)</option>
+      <option value="OVERDUE">Vencidos</option><option value="PAID">Pagados</option>
+    </select>
+  </label>
+  <label class="field">Año<input name="year" type="number" min="2000" max="2100" [(ngModel)]="year" placeholder="Todos" style="min-width: 100px" /></label>
+  <label class="field">Mes
+    <select name="month" [(ngModel)]="month">
+      <option [ngValue]="null">Todos</option>
+      @for (m of months; track $index) { <option [ngValue]="$index + 1">{{ m }}</option> }
+    </select>
+  </label>
+  <label class="field">ID de cuenta<input name="cid" type="number" [(ngModel)]="customerId" placeholder="Todas" style="min-width: 110px" /></label>
+  <button class="btn ghost">Filtrar</button>
+</form>
+<app-error [message]="error()" />
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Período</th><th>Cuenta</th><th>Corte</th><th>Pago</th><th class="right">Capital</th><th class="right">Interés</th><th class="right">Mora</th><th class="right">Total</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      @for (c of data()?.items ?? []; track c.id) {
+        <tr>
+          <td>{{ c.month | mes: c.year }}</td>
+          <td><a [routerLink]="['/store/customers', c.customer_id]">#{{ c.customer_id }}</a></td>
+          <td>{{ c.cutoff_date | fecha }}</td><td>{{ c.payment_date | fecha }}</td>
+          <td class="num">{{ c.capital | soles }}</td><td class="num">{{ c.ordinary_interest | soles }}</td><td class="num">{{ c.late_interest | soles }}</td>
+          <td class="num"><strong>{{ c.total | soles }}</strong></td>
+          <td><app-badge [value]="c.status" /></td>
+          <td class="right" style="white-space: nowrap">
+            <a class="btn sm ghost" [routerLink]="['/store/customers', c.customer_id, 'cycles', c.year, c.month]">Ver</a>
+            @if (c.status === 'CLOSED' || c.status === 'OVERDUE') {
+              <a class="btn sm" routerLink="/store/payments/new" [queryParams]="{ kind: 'CYCLE_STATEMENT', cycle_id: c.id }">Cobrar</a>
+            }
+          </td>
+        </tr>
+      } @empty { <tr><td colspan="10" class="empty">{{ loading() ? 'Cargando…' : 'No hay ciclos.' }}</td></tr> }
+    </tbody>
+  </table>
+</div>
+@if (data(); as d) { <app-pager [page]="d.page" [size]="d.size" [total]="d.total" (pageChange)="load($event)" /> }
