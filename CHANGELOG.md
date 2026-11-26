@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-26
+
+### Fixed
+- **Customers**: the payment day only accepts 1 to 28, as the API does, and its error names the payment day instead of the cut-off day.
+- **Customers**: the credit limit and the rates only accept numbers with a decimal point (2 decimals for amounts, 7 for rates), so values such as `1500,50` or `75%` no longer reach the API.
+- **Core**: API validation errors are shown in Spanish with the name of the field, instead of the API's English message.
+- **Credit**: the quantity of a new purchase shows the quantity that will be registered after typing a value below 1 or above 10 000.
+- **IAM and Stores**: sign up and forgot password require an email with a dot in its domain, as the API does.
+- **Billing and Credit**: the payment and purchase lists warn when the end date is before the start date instead of showing an empty list.
+- **Billing**: *Registrar pago* only quotes whole ids greater than zero.
+
 ## [0.4.0] - 2026-11-26
 
 ### Added

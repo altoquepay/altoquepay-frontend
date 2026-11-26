@@ -81,7 +81,8 @@ export class CustomerDetailPage implements OnInit {
     this.m = {
       first_names: a.first_names, last_names: a.last_names, phone: a.phone, address: a.address,
       credit_limit: a.credit_limit, cutoff_day: a.cutoff_day, payment_day: a.payment_day,
-      tea: a.tea, late_tea: a.late_tea, max_weeks: a.max_weeks,
+      // La API puede mandar una tasa en cero como 0E-7: Number la deja como 0 para que pase el pattern.
+      tea: String(Number(a.tea)), late_tea: String(Number(a.late_tea)), max_weeks: a.max_weeks,
     };
   }
 
