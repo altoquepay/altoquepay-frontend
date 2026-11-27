@@ -85,8 +85,8 @@ export class StoreProfilePage implements OnInit {
       this.preferencesError.set(`La TEA supera el tope del BCRP (${c.max_tea}%).`);
       return;
     }
-    if (c && Number(this.m.default_late_tea) > Number(c.max_late_tea)) {
-      this.preferencesError.set(`La TEA moratoria supera el tope del BCRP (${c.max_late_tea}%).`);
+    if (Number(this.m.default_late_tea) <= Number(this.m.default_tea)) {
+      this.preferencesError.set('La TEA moratoria debe ser mayor que la TEA.');
       return;
     }
     this.saving.set(section);

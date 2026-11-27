@@ -2,18 +2,18 @@
   <div><h1>Topes de tasa del BCRP</h1><p>Sin un tope vigente, las compras responden NO_BCRP_CAP_IN_FORCE.</p></div>
 </div>
 @if (current(); as c) {
-  <div class="alert success">Tope vigente hoy: TEA máx. <strong>{{ c.max_tea | pct }}</strong> · moratoria máx. {{ c.max_late_tea | pct }} · del {{ c.valid_from | fecha }} al {{ c.valid_to | fecha }}</div>
+  <div class="alert success">Tope vigente hoy: TEA máx. <strong>{{ c.max_tea | pct }}</strong> · del {{ c.valid_from | fecha }} al {{ c.valid_to | fecha }}</div>
 } @else if (currentLoaded()) {
   <div class="alert warn">No hay un tope vigente hoy. Registra uno para que las bodegas puedan vender al crédito.</div>
 }
 <div class="grid" style="grid-template-columns: minmax(0, 1fr) 340px; align-items: start">
   <div class="table-wrap">
     <table>
-      <thead><tr><th>ID</th><th>Vigente desde</th><th>Hasta</th><th class="right">TEA máx.</th><th class="right">Moratoria máx.</th></tr></thead>
+      <thead><tr><th>ID</th><th>Vigente desde</th><th>Hasta</th><th class="right">TEA máx.</th></tr></thead>
       <tbody>
         @for (c of caps(); track c.id) {
-          <tr><td>{{ c.id }}</td><td>{{ c.valid_from | fecha }}</td><td>{{ c.valid_to | fecha }}</td><td class="num">{{ c.max_tea | pct: 7 }}</td><td class="num">{{ c.max_late_tea | pct: 7 }}</td></tr>
-        } @empty { <tr><td colspan="5" class="empty">No hay topes registrados.</td></tr> }
+          <tr><td>{{ c.id }}</td><td>{{ c.valid_from | fecha }}</td><td>{{ c.valid_to | fecha }}</td><td class="num">{{ c.max_tea | pct: 7 }}</td></tr>
+        } @empty { <tr><td colspan="4" class="empty">No hay topes registrados.</td></tr> }
       </tbody>
     </table>
   </div>
@@ -25,7 +25,7 @@
     </label>
     <label class="field">Vigente desde<input name="from" type="date" [(ngModel)]="m.valid_from" required /></label>
     <label class="field">Vigente hasta<input name="to" type="date" [(ngModel)]="m.valid_to" required /></label>
-    <p class="muted small" style="margin: 0">El período no puede cruzarse con otro tope. La moratoria máxima la calcula el backend.</p>
+    <p class="muted small" style="margin: 0">El período no puede cruzarse con otro tope. La moratoria no tiene tope del BCRP: solo debe ser mayor que la TEA.</p>
     <button class="btn" [disabled]="saving() || f.invalid">Registrar</button>
   </form>
 </div>

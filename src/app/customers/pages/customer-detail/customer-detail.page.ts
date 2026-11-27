@@ -95,6 +95,10 @@ export class CustomerDetailPage implements OnInit {
       this.error.set('El día de pago debe ser posterior al día de corte.');
       return;
     }
+    if (Number(this.m.late_tea) <= Number(this.m.tea)) {
+      this.error.set('La TEA moratoria debe ser mayor que la TEA.');
+      return;
+    }
     this.busy.set(true);
     this.error.set(null);
     const body: UpdateAccount = {

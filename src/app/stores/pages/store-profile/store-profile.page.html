@@ -72,7 +72,7 @@
               <input name="late" inputmode="decimal" [(ngModel)]="m.default_late_tea" required pattern="^\d+(\.\d+)?$" /><span class="suffix">%</span></span></label>
         </div>
         @if (cap(); as c) {
-          <p class="muted small" style="margin: -6px 0 0">Tope BCRP vigente: TEA máx. {{ c.max_tea | pct }} · moratoria máx. {{ c.max_late_tea | pct }} (hasta el {{ c.valid_to | fecha }}). 40% se escribe 40.</p>
+          <p class="muted small" style="margin: -6px 0 0">Tope BCRP vigente: TEA máx. {{ c.max_tea | pct }} (hasta el {{ c.valid_to | fecha }}). La moratoria no tiene tope, pero debe ser mayor que la TEA. 40% se escribe 40.</p>
         } @else {
           <p class="small text-bad" style="margin: -6px 0 0">No hay un tope BCRP vigente; pide a soporte que lo registre.</p>
         }

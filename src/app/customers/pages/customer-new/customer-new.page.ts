@@ -72,6 +72,13 @@ export class CustomerNewPage implements OnInit {
       this.error.set('El día de pago debe ser posterior al día de corte.');
       return;
     }
+    // Lo que se deja vacío toma el valor de la bodega, así que se compara con lo que quedará.
+    const tea = Number(this.m.tea || this.store()?.default_tea);
+    const lateTea = Number(this.m.late_tea || this.store()?.default_late_tea);
+    if (tea && lateTea && lateTea <= tea) {
+      this.error.set('La TEA moratoria debe ser mayor que la TEA.');
+      return;
+    }
     this.saving.set(true);
     this.error.set(null);
     const body: OpenAccount = {
