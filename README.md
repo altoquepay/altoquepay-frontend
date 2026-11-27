@@ -2,7 +2,7 @@
 
 Web frontend of **AlToquePay**, a web application for small neighborhood businesses (corner stores, bakeries, butcher shops, hair salons and similar) to manage the credit they grant to their customers. It replaces the paper notebook with a digital, automated record of customers, credit purchases, payment schedules and late payments.
 
-> **Status:** early development (`0.x`). Every screen of the first release is built on top of [altoquepay-backend](https://github.com/altoquepay/altoquepay-backend) API `0.9.0`, covering its 54 endpoints. The UI is in Spanish.
+> **Status:** early development (`0.x`). Every screen of the first release is built on top of [altoquepay-backend](https://github.com/altoquepay/altoquepay-backend) API `0.9.1`, covering its 54 endpoints. The UI is in Spanish. Deployed at https://altoquepay-frontend.web.app.
 
 ## Overview
 
