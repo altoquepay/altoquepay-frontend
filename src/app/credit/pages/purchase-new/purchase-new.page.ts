@@ -67,9 +67,8 @@ export class PurchaseNewPage implements OnInit {
   weekOptions = computed(() =>
     Array.from({ length: this.maxWeeks() - this.graceWeeks() }, (_, i) => i + 1),
   );
-  graceOptions = computed(() =>
-    Array.from({ length: this.maxWeeks() - this.installments() + 1 }, (_, i) => i),
-  );
+  /** Siempre queda al menos una cuota; al elegir gracia, las cuotas se ajustan solas. */
+  graceOptions = computed(() => Array.from({ length: this.maxWeeks() }, (_, i) => i));
 
   sim = signal<PurchaseDetail | null>(null);
   simulating = signal(false);
@@ -149,8 +148,11 @@ export class PurchaseNewPage implements OnInit {
     this.changed();
   }
 
+  /** Con el plazo al máximo, la gracia ocupa semanas de cuotas: el plazo se mantiene y la cuota sube. */
   setGraceWeeks(n: number): void {
-    this.graceWeeks.set(Number(n));
+    const grace = Number(n);
+    this.graceWeeks.set(grace);
+    if (this.installments() + grace > this.maxWeeks()) this.installments.set(this.maxWeeks() - grace);
     this.changed();
   }
 
