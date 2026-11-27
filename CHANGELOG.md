@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **CI/CD**: GitHub Actions run the unit tests and the production build on every pull request and push to `develop` and `main`.
+- **Deployment**: pushing a version tag (`vX.Y.Z`) on `main` tests, builds and deploys the app to Firebase Hosting at `https://altoquepay-frontend.web.app`, authenticated with Workload Identity Federation instead of a stored key.
+
 ## [0.4.1] - 2026-11-26
 
 ### Fixed
