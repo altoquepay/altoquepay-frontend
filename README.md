@@ -100,7 +100,6 @@ Each context has `model/` (API resources), `services/` (one service per API area
 
 To run the frontend locally against the team server, use `npx ng serve --configuration team-server`.
 
-- The backend only accepts browser requests from `CORS_ORIGINS`. It must list `http://localhost:4200` (keep that port), `https://altoquepay-frontend.web.app` and `https://altoquepay-frontend.firebaseapp.com`. Its `FRONTEND_URL`, used in the password reset links, must be `https://altoquepay-frontend.web.app`.
 - The sign-in screen shows whether `GET /health` answers. If it says *sin conexión* while the backend is running, check CORS.
 - Before the first credit sale, the system administrator (`FIRST_ADMIN_EMAIL` in the backend `.env`) must register the BCRP cap in force; otherwise purchases answer `NO_BCRP_CAP_IN_FORCE`.
 
@@ -135,8 +134,6 @@ The app is hosted on Firebase Hosting at `https://altoquepay-frontend.web.app`, 
 
 - `ci.yml` runs `npm ci`, the unit tests and the production build on every pull request and push to `develop` and `main`.
 - `deploy.yml` runs when a `vX.Y.Z` tag is pushed. It deploys only a tag on `main` whose version matches `package.json`: it tests, builds and deploys to the live channel.
-
-The deploy authenticates with Workload Identity Federation: provider `github-actions/github`, service account `github-deploy`. No key or secret is stored, and only `v*` tags of this repository can deploy.
 
 ## Workflow
 
