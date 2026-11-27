@@ -1,0 +1,36 @@
+name: Deploy
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Workload Identity Federation: a GitHub OIDC token instead of a key.
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      # Gitflow: deploy only a tag on main that matches package.json.
+      - name: Check the tag
+        run: |
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+          test "${GITHUB_REF_NAME#v}" = "$(node -p "require('./package.json').version")"
+      - run: npm ci
+      - run: npx ng test --watch=false
+      - run: npx ng build
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/353101560516/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: github-deploy@altoquepay-frontend.iam.gserviceaccount.com
+      - run: npx -y firebase-tools@15.37.0 deploy --only hosting --non-interactive
