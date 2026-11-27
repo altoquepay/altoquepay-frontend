@@ -86,13 +86,26 @@
   <div class="grid main-aside">
     <section class="card">
       @if (p.mode === 'WEEKLY') {
-        <h2>Plan de pagos ({{ p.installments_count }} cuotas)</h2>
-        <p class="muted small" style="margin: 0 0 14px">Detalle de las cuotas del crédito. El estado se calcula con la fecha de hoy.</p>
+        <h2>Plan de pagos ({{ p.installments_count }} cuotas{{ p.grace_weeks ? ' + ' + p.grace_weeks + (p.grace_weeks === 1 ? ' semana' : ' semanas') + ' de gracia' : '' }})</h2>
+        <p class="muted small" style="margin: 0 0 14px">Detalle de las cuotas del crédito. El estado se calcula con la fecha de hoy.
+          En las semanas de gracia no se paga y su interés se suma al saldo.</p>
         <div class="table-wrap">
           <table>
             <thead><tr><th>N° cuota</th><th>Fecha de vencimiento</th><th class="right">Saldo inicial</th><th class="right">Interés</th>
               <th class="right">Amortización</th><th class="right">Cuota</th><th class="right">Saldo final</th><th>Estado</th></tr></thead>
             <tbody>
+              @for (g of p.grace_periods; track g.number) {
+                <tr class="grace">
+                  <td class="center strong">G{{ g.number }}</td>
+                  <td>{{ g.end_date | fecha }}</td>
+                  <td class="num">{{ g.opening_balance | soles }}</td>
+                  <td class="num">{{ g.interest | soles }}</td>
+                  <td class="num">{{ 0 | soles }}</td>
+                  <td class="num strong">{{ 0 | soles }}</td>
+                  <td class="num">{{ g.closing_balance | soles }}</td>
+                  <td><app-badge value="GRACE" label="Gracia" tone="info" /></td>
+                </tr>
+              }
               @for (i of schedule(); track i.number) {
                 <tr>
                   <td class="center strong">{{ i.number }}</td>
@@ -149,7 +162,8 @@
         <dt><app-icon name="percent" [size]="16" /> Tasa moratoria</dt><dd>{{ p.late_tea | pct }}</dd>
         @if (p.mode === 'WEEKLY') {
           <dt><app-icon name="percent" [size]="16" /> Tasa semanal</dt><dd>{{ p.weekly_rate | pct: 7 }}</dd>
-          <dt><app-icon name="info" [size]="16" /> Período de gracia</dt><dd>Gracia total ({{ p.grace_days ?? 0 }} días)</dd>
+          <dt><app-icon name="info" [size]="16" /> Período de gracia</dt>
+          <dd>{{ p.grace_weeks ? 'Gracia total (' + p.grace_weeks + (p.grace_weeks === 1 ? ' semana)' : ' semanas)') : 'Sin gracia' }}</dd>
         }
         <dt><app-icon name="coins" [size]="16" /> Moneda</dt><dd>Soles (S/)</dd>
       </dl>

@@ -58,3 +58,9 @@
   justify-content: space-between;
   margin-top: 4px;
 }
+
+/* Semanas de gracia total: no se paga, solo se capitaliza el interés. */
+tr.grace td {
+  color: var(--muted);
+  font-style: italic;
+}

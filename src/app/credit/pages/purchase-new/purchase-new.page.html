@@ -130,14 +130,27 @@
           </label>
         }
       </div>
+      @if (mode() === 'WEEKLY') {
+        <div class="form-row two">
+          <label class="field">Período de gracia
+            <select [ngModel]="graceWeeks()" (ngModelChange)="setGraceWeeks($event)">
+              @for (n of graceOptions(); track n) {
+                <option [ngValue]="n">{{ n === 0 ? 'Sin gracia' : 'Gracia total: ' + n + (n === 1 ? ' semana' : ' semanas') }}</option>
+              }
+            </select>
+          </label>
+          <label class="field">Plazo total<input [value]="installments() + graceWeeks() + ' semanas'" readonly /></label>
+        </div>
+      }
       <p class="muted small" style="margin: -4px 0 0">Las tasas y fechas salen de las condiciones del cliente; cámbialas en Clientes.</p>
 
       @if (mode() === 'WEEKLY') {
         <div class="info-box">
           <span class="chip-icon sm blue"><app-icon name="info" [size]="17" /></span>
           <div style="flex: 1"><strong>Período de gracia</strong>
-            <small>Si la compra es antes del corte, el interés hasta la primera cuota se capitaliza (gracia total).</small></div>
-          <span class="badge info">{{ sim()?.grace_days !== null && sim()?.grace_days !== undefined ? sim()!.grace_days + ' días' : 'Gracia total' }}</span>
+            <small>Las semanas se cuentan desde la compra. En cada semana de gracia total no se paga y su interés se suma al
+              saldo; el plazo se mantiene, así que las cuotas que siguen suben.</small></div>
+          <span class="badge info">{{ graceWeeks() === 0 ? 'Sin gracia' : graceWeeks() + (graceWeeks() === 1 ? ' semana' : ' semanas') }}</span>
         </div>
       }
     </div>
@@ -174,7 +187,7 @@
 
 @if (sim()?.installments?.length) {
   <h2 style="margin: 4px 0 12px">Cronograma de cuotas</h2>
-  <app-schedule-table [items]="sim()!.installments" [showStatus]="false" />
+  <app-schedule-table [items]="sim()!.installments" [grace]="sim()!.grace_periods" [showStatus]="false" />
 }
 
 <div class="actions footer">

@@ -14,6 +14,8 @@ export interface RegisterPurchase {
   purchased_at: string;
   mode: PaymentMode;
   installments_count?: number | null;
+  /** Solo en cuotas: semanas de gracia total antes de las cuotas (0 = sin gracia). */
+  grace_weeks?: number;
   items: RequestedItem[];
 }
 
@@ -52,6 +54,7 @@ export interface Purchase {
   late_tea: string;
   term_days: number | null;
   grace_days: number | null;
+  grace_weeks: number | null;
   capitalized_amount: string | null;
   weekly_rate: string | null;
   installments_count: number | null;
@@ -63,7 +66,17 @@ export interface Purchase {
   voided_by: number | null;
 }
 
+/** Semana de gracia total: no se paga y su interés se suma al saldo. */
+export interface GracePeriod {
+  number: number;
+  end_date: string;
+  opening_balance: string;
+  interest: string;
+  closing_balance: string;
+}
+
 export interface PurchaseDetail extends Purchase {
   items: PurchaseItem[];
+  grace_periods: GracePeriod[];
   installments: Installment[];
 }

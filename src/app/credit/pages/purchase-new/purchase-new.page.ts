@@ -58,9 +58,18 @@ export class PurchaseNewPage implements OnInit {
   estimated = computed(() => this.cart().reduce((s, l) => s + Number(l.product.list_price) * l.quantity, 0));
   mode = signal<PaymentMode>('WEEKLY');
   installments = signal(4);
+  /** Semanas de gracia total que elige la bodega: no se paga y el interés se suma al saldo. */
+  graceWeeks = signal(0);
   purchasedAt = nowLimaLocal();
   readonly maxDate = nowLimaLocal();
-  weekOptions = computed(() => Array.from({ length: this.customer()?.max_weeks ?? 4 }, (_, i) => i + 1));
+  private maxWeeks = computed(() => this.customer()?.max_weeks ?? 4);
+  /** Cuotas + semanas de gracia caben en las semanas máximas del cliente. */
+  weekOptions = computed(() =>
+    Array.from({ length: this.maxWeeks() - this.graceWeeks() }, (_, i) => i + 1),
+  );
+  graceOptions = computed(() =>
+    Array.from({ length: this.maxWeeks() - this.installments() + 1 }, (_, i) => i),
+  );
 
   sim = signal<PurchaseDetail | null>(null);
   simulating = signal(false);
@@ -94,6 +103,9 @@ export class PurchaseNewPage implements OnInit {
     this.customer.set(c);
     this.pickingCustomer.set(false);
     if (this.installments() > c.max_weeks) this.installments.set(c.max_weeks);
+    if (this.installments() + this.graceWeeks() > c.max_weeks) {
+      this.graceWeeks.set(c.max_weeks - this.installments());
+    }
     this.changed();
   }
 
@@ -137,6 +149,11 @@ export class PurchaseNewPage implements OnInit {
     this.changed();
   }
 
+  setGraceWeeks(n: number): void {
+    this.graceWeeks.set(Number(n));
+    this.changed();
+  }
+
   /** Invalida la simulación y vuelve a pedirla si ya hay datos suficientes. */
   changed(): void {
     this.sim.set(null);
@@ -155,6 +172,7 @@ export class PurchaseNewPage implements OnInit {
       purchased_at: limaLocalToIso(this.purchasedAt),
       mode: this.mode(),
       installments_count: this.mode() === 'WEEKLY' ? this.installments() : null,
+      grace_weeks: this.mode() === 'WEEKLY' ? this.graceWeeks() : 0,
       items: this.cart().map((l) => ({ product_id: l.product.id, quantity: l.quantity })),
     };
   }

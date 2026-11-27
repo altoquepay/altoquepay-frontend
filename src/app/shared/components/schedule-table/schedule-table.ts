@@ -1,10 +1,13 @@
 import { Component, input } from '@angular/core';
-import { Installment } from '../../../credit/model/purchase';
+import { GracePeriod, Installment } from '../../../credit/model/purchase';
 import { Badge } from '../badge/badge';
 import { FechaPipe } from '../../pipes/fecha.pipe';
 import { SolesPipe } from '../../pipes/soles.pipe';
 
-/** Cronograma de cuotas semanales (método francés). */
+/**
+ * Cronograma de cuotas semanales (método francés). Las semanas de gracia total van primero:
+ * no se paga y su interés se suma al saldo.
+ */
 @Component({
   selector: 'app-schedule-table',
   templateUrl: './schedule-table.html',
@@ -13,5 +16,6 @@ import { SolesPipe } from '../../pipes/soles.pipe';
 })
 export class ScheduleTable {
   items = input.required<Installment[]>();
+  grace = input<GracePeriod[]>([]);
   showStatus = input(true);
 }
