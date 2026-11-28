@@ -34,34 +34,39 @@ describe('ScheduleTable', () => {
     return rows.map((row) => [...row.querySelectorAll('td')].map((cell) => cell.textContent!.trim()));
   }
 
-  it('lists the grace weeks first, with nothing paid and their interest added', () => {
+  it('lists the grace weeks first, as total grace with nothing paid and their interest added', () => {
     const rows = render([installment(1, '2026-12-11', '101.09')], [grace]);
 
-    expect(rows[0][0]).toBe('G1');
+    expect(rows[0][0]).toBe('1');
     expect(rows[0][1]).toBe('04/12/2026');
-    expect(rows[0].slice(2, 7).map((cell) => cell.replace(/\s/g, ' '))).toEqual([
+    expect(rows[0][2]).toBe('Total');
+    expect(rows[0].slice(3, 8).map((cell) => cell.replace(/\s/g, ' '))).toEqual([
       'S/ 100.00',
       'S/ 1.09',
       'S/ 0.00',
       'S/ 0.00',
       'S/ 101.09',
     ]);
-    expect(rows[0][7]).toBe('Gracia');
-    expect(rows[1][0]).toBe('1');
+    expect(rows[0][8]).toBe('Gracia');
+    expect(rows[1].slice(0, 3)).toEqual(['2', '11/12/2026', 'Sin gracia']);
   });
 
-  it('puts a grace week chosen between installments in its place by date', () => {
+  it('numbers every week from 1, with a grace week between installments in its place by date', () => {
     const between: GracePeriod = { ...grace, week: 2, end_date: '2026-12-11' };
     const rows = render([installment(1, '2026-12-04', '100.00'), installment(2, '2026-12-18', '68.85')], [between]);
 
-    expect(rows.map((row) => row[0])).toEqual(['1', 'G1', '2']);
+    expect(rows.map((row) => [row[0], row[2]])).toEqual([
+      ['1', 'Sin gracia'],
+      ['2', 'Total'],
+      ['3', 'Sin gracia'],
+    ]);
   });
 
   it('shows only the installments without grace, and hides the status when asked', () => {
     const rows = render([installment(1, '2026-12-04', '100.00')], [], false);
 
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toHaveLength(7);
+    expect(rows[0]).toHaveLength(8);
     expect(rows[0][0]).toBe('1');
   });
 

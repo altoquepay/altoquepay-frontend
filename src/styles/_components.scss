@@ -1078,3 +1078,35 @@ tfoot td {
     }
   }
 }
+
+/* Periodo de gracia de cada semana del cronograma: Total (no se paga) o Sin gracia (paga cuota). */
+td.period {
+  font-weight: 600;
+
+  &.total {
+    color: var(--info);
+  }
+
+  &.none {
+    color: var(--ok);
+  }
+}
+
+/* Cronograma: columnas del mismo ancho (salvo N°) para que montos y fechas queden alineados. */
+table.schedule {
+  table-layout: fixed;
+  min-width: 860px;
+
+  th:first-child {
+    width: 56px;
+  }
+
+  th {
+    white-space: normal;
+    vertical-align: bottom;
+  }
+
+  td {
+    white-space: nowrap;
+  }
+}

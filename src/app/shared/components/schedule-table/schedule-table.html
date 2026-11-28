@@ -1,14 +1,14 @@
 <div class="table-wrap">
-  <table>
+  <table class="schedule">
     <thead>
-      <tr><th>N°</th><th>Vence</th><th class="right">Saldo inicial</th><th class="right">Interés</th><th class="right">Amortización</th>
-        <th class="right">Cuota</th><th class="right">Saldo final</th>@if (showStatus()) { <th>Estado</th> }</tr>
+      <tr><th>N°</th><th>Vence</th><th>Periodo gracia</th><th class="right">Saldo inicial</th><th class="right">Interés</th>
+        <th class="right">Amortización</th><th class="right">Cuota</th><th class="right">Saldo final</th>@if (showStatus()) { <th>Estado</th> }</tr>
     </thead>
     <tbody>
-      @for (r of rows(); track r.date) {
+      @for (r of rows(); track r.date; let n = $index) {
         @if (r.grace; as g) {
-          <tr class="grace">
-            <td>G{{ g.number }}</td><td>{{ g.end_date | fecha }}</td>
+          <tr>
+            <td>{{ n + 1 }}</td><td>{{ g.end_date | fecha }}</td><td class="period total">Total</td>
             <td class="num">{{ g.opening_balance | soles }}</td><td class="num">{{ g.interest | soles }}</td>
             <td class="num">{{ 0 | soles }}</td><td class="num"><strong>{{ 0 | soles }}</strong></td>
             <td class="num">{{ g.closing_balance | soles }}</td>
@@ -16,14 +16,14 @@
           </tr>
         } @else if (r.installment; as i) {
           <tr>
-            <td>{{ i.number }}</td><td>{{ i.due_date | fecha }}</td>
+            <td>{{ n + 1 }}</td><td>{{ i.due_date | fecha }}</td><td class="period none">Sin gracia</td>
             <td class="num">{{ i.opening_balance | soles }}</td><td class="num">{{ i.interest | soles }}</td>
             <td class="num">{{ i.amortization | soles }}</td><td class="num"><strong>{{ i.amount | soles }}</strong></td>
             <td class="num">{{ i.closing_balance | soles }}</td>
             @if (showStatus()) { <td><app-badge [value]="i.status" /></td> }
           </tr>
         }
-      } @empty { <tr><td colspan="8" class="empty">Sin cuotas (compra de fecha única).</td></tr> }
+      } @empty { <tr><td colspan="9" class="empty">Sin cuotas (compra de fecha única).</td></tr> }
     </tbody>
   </table>
 </div>
