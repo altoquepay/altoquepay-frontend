@@ -64,3 +64,83 @@
   justify-content: space-between;
   margin-top: 8px;
 }
+
+// Semanas del plazo: cada una es cuota o gracia, y se cambia tocándola.
+.week-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.link-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--brand-hover);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.week-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.week {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  .n {
+    font-weight: 700;
+    font-size: 0.92rem;
+  }
+
+  small {
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--line-strong);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+  }
+
+  &.grace {
+    border-color: var(--info);
+    background: var(--info-soft);
+    color: var(--info);
+
+    small {
+      color: var(--info);
+      font-weight: 600;
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background: var(--surface-muted);
+  }
+}

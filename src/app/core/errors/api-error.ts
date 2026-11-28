@@ -35,7 +35,7 @@ const MESSAGES: Record<string, string> = {
   INVALID_DNI: 'El DNI debe tener 8 dígitos.',
   INVALID_EMAIL: 'El email no es válido.',
   INVALID_FULL_NAME: 'El nombre completo no es válido.',
-  INVALID_GRACE_WEEKS: 'Las semanas de gracia solo aplican a compras en cuotas y no pueden ser negativas.',
+  INVALID_GRACE_WEEKS: 'Las semanas de gracia solo aplican a compras en cuotas, no se repiten y la última semana siempre paga una cuota.',
   INVALID_INSTALLMENTS_COUNT: 'Una compra de fecha única no lleva cuotas.',
   INVALID_MAX_WEEKS: 'Las semanas máximas deben estar entre 1 y 99.',
   INVALID_NAME: 'El nombre no es válido.',

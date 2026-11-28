@@ -123,23 +123,33 @@
       <div class="form-row two">
         <label class="field">Moneda<input value="Soles (S/)" readonly /></label>
         @if (mode() === 'WEEKLY') {
-          <label class="field">Número de cuotas <span class="req">*</span>
-            <select [ngModel]="installments()" (ngModelChange)="setInstallments($event)">
-              @for (n of weekOptions(); track n) { <option [ngValue]="n">{{ n }}</option> }
+          <label class="field">Plazo <span class="req">*</span>
+            <select [ngModel]="term()" (ngModelChange)="setTerm($event)">
+              @for (n of termOptions(); track n) { <option [ngValue]="n">{{ n === 1 ? '1 semana' : n + ' semanas' }}</option> }
             </select>
           </label>
         }
       </div>
       @if (mode() === 'WEEKLY') {
+        <div class="field">
+          <span class="week-head">Semanas de gracia
+            @if (graceWeeks().length) { <button type="button" class="link-btn" (click)="clearGrace()">Sin gracia</button> }
+          </span>
+          <div class="week-picker" role="group" aria-label="Semanas de gracia">
+            @for (w of weeks(); track w.week) {
+              <button type="button" class="week" [class.grace]="w.grace" [disabled]="w.last" [attr.aria-pressed]="w.grace"
+                      [attr.aria-label]="'Semana ' + w.week + (w.grace ? ', de gracia' : ', con cuota')"
+                      [title]="w.last ? 'La última semana paga la última cuota' : (w.grace ? 'Volver a cuota' : 'Volver de gracia')"
+                      (click)="toggleGrace(w.week)">
+                <span class="n">S{{ w.week }}</span><small>{{ w.grace ? 'Gracia' : 'Cuota' }}</small>
+              </button>
+            }
+          </div>
+          <span class="hint">Toca una semana para volverla de gracia: al inicio, entre cuotas o ninguna. La última siempre paga.</span>
+        </div>
         <div class="form-row two">
-          <label class="field">Período de gracia
-            <select [ngModel]="graceWeeks()" (ngModelChange)="setGraceWeeks($event)">
-              @for (n of graceOptions(); track n) {
-                <option [ngValue]="n">{{ n === 0 ? graceLabel(n) : 'Gracia total: ' + graceLabel(n) }}</option>
-              }
-            </select>
-          </label>
-          <label class="field">Plazo total<input [value]="installments() + graceWeeks() + ' semanas'" readonly /></label>
+          <label class="field">Número de cuotas<input [value]="installments()" readonly /></label>
+          <label class="field">Gracia total<input [value]="graceLabel(graceWeeks())" readonly /></label>
         </div>
       }
       <p class="muted small" style="margin: -4px 0 0">Las tasas y fechas salen de las condiciones del cliente; cámbialas en Clientes.</p>
@@ -149,7 +159,7 @@
           <span class="chip-icon sm blue"><app-icon name="info" [size]="17" /></span>
           <div style="flex: 1"><strong>Período de gracia</strong>
             <small>Las semanas se cuentan desde la compra. En cada semana de gracia total no se paga y su interés se suma al
-              saldo; el plazo se mantiene, así que las cuotas que siguen suben.</small></div>
+              saldo; el plazo se mantiene, así que las cuotas que siguen a esa semana suben.</small></div>
           <span class="badge info">{{ graceLabel(graceWeeks()) }}</span>
         </div>
       }

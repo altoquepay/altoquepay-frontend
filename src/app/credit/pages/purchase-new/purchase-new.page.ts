@@ -16,7 +16,7 @@ import { SolesPipe } from '../../../shared/pipes/soles.pipe';
 import { ToastService } from '../../../shared/services/toast.service';
 import { initials } from '../../../shared/utils/initials';
 import { limaLocalToIso, nowLimaLocal } from '../../../shared/utils/lima-date';
-import { fitInstallments, graceLabel, graceOptions, installmentOptions } from '../../model/payment-plan';
+import { fitGrace, graceLabel, planWeeks, termOptions, toggleGraceWeek } from '../../model/payment-plan';
 import { PaymentMode, PurchaseDetail, RegisterPurchase } from '../../model/purchase';
 import { PurchasesService } from '../../services/purchases.service';
 
@@ -58,17 +58,20 @@ export class PurchaseNewPage implements OnInit {
   cart = signal<CartLine[]>([]);
   estimated = computed(() => this.cart().reduce((s, l) => s + Number(l.product.list_price) * l.quantity, 0));
   mode = signal<PaymentMode>('WEEKLY');
-  installments = signal(4);
-  /** Semanas de gracia total que elige la bodega: no se paga y el interés se suma al saldo. */
-  graceWeeks = signal(0);
+  /** Semanas del plan: las cuotas más las semanas de gracia. */
+  term = signal(4);
+  /** Semanas del plan de gracia total, elegidas por la bodega: no se paga y el interés se suma al saldo. */
+  graceWeeks = signal<number[]>([]);
+  /** Cada semana que no es de gracia paga una cuota. */
+  installments = computed(() => this.term() - this.graceWeeks().length);
   purchasedAt = nowLimaLocal();
   readonly maxDate = nowLimaLocal();
   readonly graceLabel = graceLabel;
   private maxWeeks = computed(() => this.customer()?.max_weeks ?? 4);
-  /** Cuotas + semanas de gracia caben en las semanas máximas del cliente. */
-  weekOptions = computed(() => installmentOptions(this.maxWeeks(), this.graceWeeks()));
-  /** Siempre queda al menos una cuota; al elegir gracia, las cuotas se ajustan solas. */
-  graceOptions = computed(() => graceOptions(this.maxWeeks()));
+  /** El plazo cabe en las semanas máximas del cliente. */
+  termOptions = computed(() => termOptions(this.maxWeeks()));
+  /** Las semanas del plazo, para marcar cuáles son de gracia. */
+  weeks = computed(() => planWeeks(this.term(), this.graceWeeks()));
 
   sim = signal<PurchaseDetail | null>(null);
   simulating = signal(false);
@@ -101,8 +104,8 @@ export class PurchaseNewPage implements OnInit {
   pickCustomer(c: CustomerAccount): void {
     this.customer.set(c);
     this.pickingCustomer.set(false);
-    this.graceWeeks.set(Math.min(this.graceWeeks(), c.max_weeks - 1));
-    this.installments.set(fitInstallments(this.installments(), this.graceWeeks(), c.max_weeks));
+    this.term.set(Math.min(this.term(), c.max_weeks));
+    this.graceWeeks.set(fitGrace(this.graceWeeks(), this.term()));
     this.changed();
   }
 
@@ -141,15 +144,21 @@ export class PurchaseNewPage implements OnInit {
     this.changed();
   }
 
-  setInstallments(n: number): void {
-    this.installments.set(Number(n));
+  /** Un plazo más corto quita las semanas de gracia que ya no caben. */
+  setTerm(n: number): void {
+    this.term.set(Number(n));
+    this.graceWeeks.set(fitGrace(this.graceWeeks(), this.term()));
     this.changed();
   }
 
-  /** Con el plazo al máximo, la gracia ocupa semanas de cuotas: el plazo se mantiene y la cuota sube. */
-  setGraceWeeks(n: number): void {
-    this.graceWeeks.set(Number(n));
-    this.installments.set(fitInstallments(this.installments(), this.graceWeeks(), this.maxWeeks()));
+  /** Vuelve de gracia una semana, o cuota otra vez; el plazo se mantiene, así que las cuotas suben. */
+  toggleGrace(week: number): void {
+    this.graceWeeks.set(toggleGraceWeek(this.graceWeeks(), week, this.term()));
+    this.changed();
+  }
+
+  clearGrace(): void {
+    this.graceWeeks.set([]);
     this.changed();
   }
 
@@ -171,7 +180,7 @@ export class PurchaseNewPage implements OnInit {
       purchased_at: limaLocalToIso(this.purchasedAt),
       mode: this.mode(),
       installments_count: this.mode() === 'WEEKLY' ? this.installments() : null,
-      grace_weeks: this.mode() === 'WEEKLY' ? this.graceWeeks() : 0,
+      grace_weeks: this.mode() === 'WEEKLY' ? this.graceWeeks() : [],
       items: this.cart().map((l) => ({ product_id: l.product.id, quantity: l.quantity })),
     };
   }
