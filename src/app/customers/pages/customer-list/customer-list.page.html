@@ -29,17 +29,11 @@
       <h2 style="font-size: 1.25rem">Clientes</h2>
       <a class="btn" routerLink="/store/customers/new"><app-icon name="plus" [size]="18" /> Nuevo cliente</a>
     </div>
-    <form class="toolbar" (ngSubmit)="load(1)">
-      <span class="input-icon grow"><app-icon name="search" [size]="18" />
-        <input name="search" placeholder="Buscar por nombre o DNI…" [(ngModel)]="search" maxlength="100" aria-label="Buscar cliente" /></span>
-      <span class="input-icon"><app-icon name="filter" [size]="18" />
-        <select name="status" [(ngModel)]="status" (change)="load(1)" aria-label="Filtrar por estado">
-          <option value="">Todos</option>
-          <option value="ACTIVE">Activos</option>
-          <option value="INACTIVE">Inactivos</option>
-        </select></span>
-    </form>
-    <app-error [message]="error()" />
+    <div class="list-toolbar">
+      <app-filter-chips label="Estado del cliente" [options]="options()" [value]="status()" (valueChange)="setStatus($event)" />
+      <app-search-box placeholder="Buscar por nombre o DNI…" label="Buscar cliente" [value]="search()" (search)="setSearch($event)" />
+    </div>
+    <app-error [message]="error()" [retryable]="true" (retry)="refresh()" />
     <div class="table-wrap">
       <table>
         <thead><tr><th>Cliente</th><th>Documento</th><th class="right">Línea de crédito</th><th>Estado</th><th></th></tr></thead>
@@ -59,7 +53,21 @@
               <td class="right muted"><app-icon name="chevron-right" [size]="16" /></td>
             </tr>
           } @empty {
-            <tr><td colspan="5" class="empty">{{ loading() ? 'Cargando…' : 'No hay clientes.' }}</td></tr>
+            <tr><td colspan="5" class="empty">
+              @if (loading()) { Cargando… }
+              @else if (error()) { No se pudieron cargar los clientes. }
+              @else if (search() || status()) {
+                <app-empty-state icon="search" title="Ningún cliente coincide con los filtros"
+                                 [message]="search() ? 'Revisa el nombre o el DNI que buscaste.' : null">
+                  <button type="button" class="btn sm outline" (click)="clearFilters()">Limpiar filtros</button>
+                </app-empty-state>
+              } @else {
+                <app-empty-state icon="users" title="Aún no tienes clientes"
+                                 message="Abre la cuenta de un cliente para venderle al crédito.">
+                  <a class="btn sm" routerLink="/store/customers/new">Nuevo cliente</a>
+                </app-empty-state>
+              }
+            </td></tr>
           }
         </tbody>
       </table>

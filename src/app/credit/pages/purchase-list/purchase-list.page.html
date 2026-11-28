@@ -2,18 +2,19 @@
   <div><h1>Compras al crédito</h1><p>Las más recientes primero. Las fechas son días en Lima.</p></div>
   <a class="btn" routerLink="/store/purchases/new">＋ Nueva venta</a>
 </div>
-<form class="filters" (ngSubmit)="load(1)">
-  <label class="field">Modo
-    <select name="mode" [(ngModel)]="mode">
-      <option value="">Todos</option><option value="SINGLE_DATE">Fecha única</option><option value="WEEKLY">Semanal</option>
-    </select>
-  </label>
-  <label class="field">Desde<input name="from" type="date" [(ngModel)]="from" /></label>
-  <label class="field">Hasta<input name="to" type="date" [(ngModel)]="to" /></label>
-  <label class="field">ID de cuenta<input name="cid" type="number" [(ngModel)]="customerId" placeholder="Todas" style="min-width: 110px" /></label>
-  <button class="btn ghost">Filtrar</button>
-</form>
-<app-error [message]="error()" />
+<div class="list-toolbar">
+  <app-filter-chips label="Modo de pago" [options]="options()" [value]="mode()" (valueChange)="setMode($event)" />
+  <div class="range">
+    <label class="field">Desde<input name="from" type="date" [ngModel]="from()" (ngModelChange)="setRange($event, to())" /></label>
+    <label class="field">Hasta<input name="to" type="date" [ngModel]="to()" (ngModelChange)="setRange(from(), $event)" /></label>
+    <label class="field">ID de cuenta
+      <input name="cid" type="number" min="1" placeholder="Todas" [ngModel]="customerId()" (change)="setCustomer($any($event.target).valueAsNumber)" /></label>
+    @if (filtered()) {
+      <button type="button" class="btn ghost" (click)="clearFilters()"><app-icon name="x" [size]="16" /> Limpiar</button>
+    }
+  </div>
+</div>
+<app-error [message]="error()" [retryable]="!error()?.startsWith('La fecha final')" (retry)="refresh()" />
 <div class="table-wrap">
   <table>
     <thead><tr><th>#</th><th>Fecha</th><th>Cuenta</th><th>Modo</th><th>TEA</th><th class="right">Monto</th><th class="right">Interés</th><th class="right">Total</th><th>Estado</th></tr></thead>
@@ -27,7 +28,23 @@
           <td class="num">{{ p.amount | soles }}</td><td class="num">{{ p.ordinary_interest | soles }}</td><td class="num"><strong>{{ p.total | soles }}</strong></td>
           <td><app-badge [value]="p.status" /></td>
         </tr>
-      } @empty { <tr><td colspan="9" class="empty">{{ loading() ? 'Cargando…' : 'No hay compras.' }}</td></tr> }
+      } @empty {
+        <tr><td colspan="9" class="empty">
+          @if (loading()) { Cargando… }
+          @else if (error()) { Corrige el filtro para ver las compras. }
+          @else if (filtered()) {
+            <app-empty-state icon="search" title="Ninguna compra coincide con los filtros"
+                             message="Prueba con otras fechas u otro modo de pago.">
+              <button type="button" class="btn sm outline" (click)="clearFilters()">Limpiar filtros</button>
+            </app-empty-state>
+          } @else {
+            <app-empty-state icon="cart" title="Aún no registras ventas al crédito"
+                             message="Cuando vendas al crédito, la compra y su plan de pagos aparecen aquí.">
+              <a class="btn sm" routerLink="/store/purchases/new">Nueva venta</a>
+            </app-empty-state>
+          }
+        </td></tr>
+      }
     </tbody>
   </table>
 </div>

@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { map } from 'rxjs';
 import { lateTeaProblem } from '../../../shared/utils/rates';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,9 +7,12 @@ import { parseError } from '../../../core/errors/api-error';
 import { Dashboard } from '../../../reporting/model/reporting';
 import { ReportingService } from '../../../reporting/services/reporting.service';
 import { Badge } from '../../../shared/components/badge/badge';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { ErrorAlert } from '../../../shared/components/error-alert/error-alert';
+import { countEach, FilterChips, FilterOption } from '../../../shared/components/filter-chips/filter-chips';
 import { Icon } from '../../../shared/components/icon/icon';
 import { Pager } from '../../../shared/components/pager/pager';
+import { SearchBox } from '../../../shared/components/search-box/search-box';
 import { Page } from '../../../shared/models/page';
 import { FechaPipe } from '../../../shared/pipes/fecha.pipe';
 import { SolesPipe } from '../../../shared/pipes/soles.pipe';
@@ -18,12 +22,19 @@ import { isValidPhone, PHONE_PATTERN, phoneProblem } from '../../../shared/utils
 import { AccountStatus, CustomerAccount, UpdateAccount } from '../../model/customer';
 import { CustomersService } from '../../services/customers.service';
 
+type StatusFilter = AccountStatus | '';
+const STATUSES: FilterOption<StatusFilter>[] = [
+  { value: '', label: 'Todos' },
+  { value: 'ACTIVE', label: 'Activos', tone: 'ok' },
+  { value: 'INACTIVE', label: 'Inactivos', tone: 'bad' },
+];
+
 /** Gestión de clientes y condiciones de crédito: lista a la izquierda, condiciones del cliente elegido a la derecha. */
 @Component({
   selector: 'app-customer-list',
   templateUrl: './customer-list.page.html',
   styleUrl: './customer-list.page.scss',
-  imports: [FormsModule, RouterLink, Pager, Badge, ErrorAlert, Icon, SolesPipe, FechaPipe],
+  imports: [FormsModule, RouterLink, Pager, Badge, EmptyState, ErrorAlert, FilterChips, Icon, SearchBox, SolesPipe, FechaPipe],
 })
 export class CustomerListPage implements OnInit {
   private readonly customersApi = inject(CustomersService);
@@ -33,9 +44,12 @@ export class CustomerListPage implements OnInit {
   readonly phonePattern = PHONE_PATTERN;
   readonly phoneProblem = phoneProblem;
 
-  search = '';
-  status: AccountStatus | '' = '';
+  search = signal('');
+  status = signal<StatusFilter>('');
   data = signal<Page<CustomerAccount> | null>(null);
+  counts = signal<Partial<Record<StatusFilter, number>>>({});
+  /** The status chips, each with how many customers it leaves for the current search. */
+  options = computed(() => STATUSES.map((s) => ({ ...s, count: this.counts()[s.value] ?? null })));
   stats = signal<Dashboard | null>(null);
   loading = signal(false);
   error = signal<string | null>(null);
@@ -46,7 +60,7 @@ export class CustomerListPage implements OnInit {
   formError = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.load(1);
+    this.refresh();
     this.reportingApi.dashboard().subscribe({ next: (d) => this.stats.set(d), error: () => {} });
   }
 
@@ -54,10 +68,35 @@ export class CustomerListPage implements OnInit {
     return d.upcoming.reduce((s, u) => s + Number(u.amount), 0);
   }
 
+  setStatus(status: StatusFilter): void {
+    this.status.set(status);
+    this.load(1);
+  }
+
+  setSearch(text: string): void {
+    this.search.set(text);
+    this.refresh();
+  }
+
+  clearFilters(): void {
+    this.search.set('');
+    this.status.set('');
+    this.refresh();
+  }
+
+  /** Reloads the list and the count of every chip. */
+  refresh(): void {
+    this.load(1);
+    const search = this.search().trim();
+    countEach(STATUSES, (status) =>
+      this.customersApi.listCustomers({ page: 1, size: 1, search, status }).pipe(map((p) => p.total)),
+    ).subscribe({ next: (counts) => this.counts.set(counts), error: () => this.counts.set({}) });
+  }
+
   load(page: number): void {
     this.loading.set(true);
     this.error.set(null);
-    this.customersApi.listCustomers({ page, size: 8, search: this.search.trim(), status: this.status }).subscribe({
+    this.customersApi.listCustomers({ page, size: 8, search: this.search().trim(), status: this.status() }).subscribe({
       next: (d) => {
         this.loading.set(false);
         this.data.set(d);

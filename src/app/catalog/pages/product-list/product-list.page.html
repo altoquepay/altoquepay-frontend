@@ -2,16 +2,11 @@
   <div><h1>Productos</h1><p>Catálogo de la bodega, ordenado por código.</p></div>
   <a class="btn" routerLink="/store/products/new">＋ Nuevo producto</a>
 </div>
-<form class="filters" (ngSubmit)="load(1)">
-  <input name="search" placeholder="Buscar por código o descripción" [(ngModel)]="search" maxlength="100" />
-  <select name="active" [(ngModel)]="active" (change)="load(1)">
-    <option value="">Todos</option>
-    <option value="true">Activos</option>
-    <option value="false">Inactivos</option>
-  </select>
-  <button class="btn ghost">Buscar</button>
-</form>
-<app-error [message]="error()" />
+<div class="list-toolbar">
+  <app-filter-chips label="Estado del producto" [options]="options()" [value]="active()" (valueChange)="setActive($event)" />
+  <app-search-box placeholder="Buscar por código o descripción" label="Buscar producto" [value]="search()" (search)="setSearch($event)" />
+</div>
+<app-error [message]="error()" [retryable]="true" (retry)="refresh()" />
 <div class="table-wrap">
   <table>
     <thead><tr><th></th><th>Código</th><th>Descripción</th><th>Marca</th><th>Categoría</th><th>Unidad</th><th class="right">Contado</th><th class="right">Lista</th><th>Estado</th></tr></thead>
@@ -26,7 +21,23 @@
           <td class="num">{{ p.cash_price | soles }}</td><td class="num">{{ p.list_price | soles }}</td>
           <td><app-badge [value]="p.is_active ? 'ACTIVE' : 'INACTIVE'" /></td>
         </tr>
-      } @empty { <tr><td colspan="9" class="empty">{{ loading() ? 'Cargando…' : 'No hay productos.' }}</td></tr> }
+      } @empty {
+        <tr><td colspan="9" class="empty">
+          @if (loading()) { Cargando… }
+          @else if (error()) { No se pudieron cargar los productos. }
+          @else if (search() || active()) {
+            <app-empty-state icon="search" title="Ningún producto coincide con los filtros"
+                             [message]="search() ? 'Revisa el código o la descripción que buscaste.' : null">
+              <button type="button" class="btn sm outline" (click)="clearFilters()">Limpiar filtros</button>
+            </app-empty-state>
+          } @else {
+            <app-empty-state icon="box" title="Aún no tienes productos"
+                             message="Registra los productos que vendes para armar las ventas al crédito.">
+              <a class="btn sm" routerLink="/store/products/new">Nuevo producto</a>
+            </app-empty-state>
+          }
+        </td></tr>
+      }
     </tbody>
   </table>
 </div>

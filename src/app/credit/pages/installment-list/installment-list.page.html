@@ -1,17 +1,18 @@
 <div class="page-head">
   <div><h1>Cuotas semanales</h1><p>Ordenadas por fecha de vencimiento. Se pagan en orden dentro de cada compra.</p></div>
 </div>
-<form class="filters" (ngSubmit)="load(1)">
-  <label class="field">Estado
-    <select name="status" [(ngModel)]="status">
-      <option value="">Todas</option><option value="PENDING">Pendientes</option><option value="OVERDUE">Vencidas</option>
-      <option value="PAID">Pagadas</option><option value="CANCELLED">Canceladas</option>
-    </select>
+<div class="list-toolbar">
+  <app-filter-chips label="Estado de la cuota" [options]="options()" [value]="status()" (valueChange)="setStatus($event)" />
+  <label class="field">Vence hasta
+    <span class="clearable">
+      <input name="due" type="date" [ngModel]="dueBefore()" (ngModelChange)="setDueBefore($event ?? '')" />
+      @if (dueBefore()) {
+        <button type="button" class="icon-btn" aria-label="Quitar la fecha" (click)="setDueBefore('')"><app-icon name="x" [size]="16" /></button>
+      }
+    </span>
   </label>
-  <label class="field">Vence hasta<input name="due" type="date" [(ngModel)]="dueBefore" /></label>
-  <button class="btn ghost">Filtrar</button>
-</form>
-<app-error [message]="error()" />
+</div>
+<app-error [message]="error()" [retryable]="true" (retry)="refresh()" />
 <div class="table-wrap">
   <table>
     <thead><tr><th>Vence</th><th>Compra</th><th>Cuenta</th><th>N°</th><th class="right">Interés</th><th class="right">Amortización</th><th class="right">Cuota</th><th>Estado</th><th></th></tr></thead>
@@ -33,7 +34,28 @@
             }
           </td>
         </tr>
-      } @empty { <tr><td colspan="9" class="empty">{{ loading() ? 'Cargando…' : 'No hay cuotas.' }}</td></tr> }
+      } @empty {
+        <tr><td colspan="9" class="empty">
+          @if (loading()) { Cargando… }
+          @else if (error()) { No se pudieron cargar las cuotas. }
+          @else if (dueBefore()) {
+            <app-empty-state icon="calendar" title="Ninguna cuota de este estado vence hasta esa fecha">
+              <button type="button" class="btn sm outline" (click)="setDueBefore('')">Quitar la fecha</button>
+            </app-empty-state>
+          } @else if (status() === 'OVERDUE') {
+            <app-empty-state tone="positive" title="No hay cuotas vencidas" message="Tus clientes están al día con sus cuotas semanales." />
+          } @else if (status() === 'PENDING' || status() === '') {
+            <app-empty-state icon="calendar" title="No hay cuotas por cobrar"
+                             message="Las cuotas aparecen aquí cuando registras una venta con pago semanal.">
+              <a class="btn sm" routerLink="/store/purchases/new">Nueva venta</a>
+            </app-empty-state>
+          } @else {
+            <app-empty-state icon="calendar" title="No hay cuotas en este estado">
+              <button type="button" class="btn sm outline" (click)="setStatus('PENDING')">Ver pendientes</button>
+            </app-empty-state>
+          }
+        </td></tr>
+      }
     </tbody>
   </table>
 </div>
