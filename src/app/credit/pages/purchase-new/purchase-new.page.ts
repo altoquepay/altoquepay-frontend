@@ -16,6 +16,7 @@ import { SolesPipe } from '../../../shared/pipes/soles.pipe';
 import { ToastService } from '../../../shared/services/toast.service';
 import { initials } from '../../../shared/utils/initials';
 import { limaLocalToIso, nowLimaLocal } from '../../../shared/utils/lima-date';
+import { fitInstallments, graceLabel, graceOptions, installmentOptions } from '../../model/payment-plan';
 import { PaymentMode, PurchaseDetail, RegisterPurchase } from '../../model/purchase';
 import { PurchasesService } from '../../services/purchases.service';
 
@@ -62,13 +63,12 @@ export class PurchaseNewPage implements OnInit {
   graceWeeks = signal(0);
   purchasedAt = nowLimaLocal();
   readonly maxDate = nowLimaLocal();
+  readonly graceLabel = graceLabel;
   private maxWeeks = computed(() => this.customer()?.max_weeks ?? 4);
   /** Cuotas + semanas de gracia caben en las semanas máximas del cliente. */
-  weekOptions = computed(() =>
-    Array.from({ length: this.maxWeeks() - this.graceWeeks() }, (_, i) => i + 1),
-  );
+  weekOptions = computed(() => installmentOptions(this.maxWeeks(), this.graceWeeks()));
   /** Siempre queda al menos una cuota; al elegir gracia, las cuotas se ajustan solas. */
-  graceOptions = computed(() => Array.from({ length: this.maxWeeks() }, (_, i) => i));
+  graceOptions = computed(() => graceOptions(this.maxWeeks()));
 
   sim = signal<PurchaseDetail | null>(null);
   simulating = signal(false);
@@ -101,10 +101,8 @@ export class PurchaseNewPage implements OnInit {
   pickCustomer(c: CustomerAccount): void {
     this.customer.set(c);
     this.pickingCustomer.set(false);
-    if (this.installments() > c.max_weeks) this.installments.set(c.max_weeks);
-    if (this.installments() + this.graceWeeks() > c.max_weeks) {
-      this.graceWeeks.set(c.max_weeks - this.installments());
-    }
+    this.graceWeeks.set(Math.min(this.graceWeeks(), c.max_weeks - 1));
+    this.installments.set(fitInstallments(this.installments(), this.graceWeeks(), c.max_weeks));
     this.changed();
   }
 
@@ -150,9 +148,8 @@ export class PurchaseNewPage implements OnInit {
 
   /** Con el plazo al máximo, la gracia ocupa semanas de cuotas: el plazo se mantiene y la cuota sube. */
   setGraceWeeks(n: number): void {
-    const grace = Number(n);
-    this.graceWeeks.set(grace);
-    if (this.installments() + grace > this.maxWeeks()) this.installments.set(this.maxWeeks() - grace);
+    this.graceWeeks.set(Number(n));
+    this.installments.set(fitInstallments(this.installments(), this.graceWeeks(), this.maxWeeks()));
     this.changed();
   }
 

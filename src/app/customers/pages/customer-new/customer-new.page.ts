@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { lateTeaProblem } from '../../../shared/utils/rates';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -73,10 +74,12 @@ export class CustomerNewPage implements OnInit {
       return;
     }
     // Lo que se deja vacío toma el valor de la bodega, así que se compara con lo que quedará.
-    const tea = Number(this.m.tea || this.store()?.default_tea);
-    const lateTea = Number(this.m.late_tea || this.store()?.default_late_tea);
-    if (tea && lateTea && lateTea <= tea) {
-      this.error.set('La TEA moratoria debe ser mayor que la TEA.');
+    const lateProblem = lateTeaProblem(
+      this.m.tea || this.store()?.default_tea,
+      this.m.late_tea || this.store()?.default_late_tea,
+    );
+    if (lateProblem) {
+      this.error.set(lateProblem);
       return;
     }
     this.saving.set(true);

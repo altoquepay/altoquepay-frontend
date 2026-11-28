@@ -135,7 +135,7 @@
           <label class="field">Período de gracia
             <select [ngModel]="graceWeeks()" (ngModelChange)="setGraceWeeks($event)">
               @for (n of graceOptions(); track n) {
-                <option [ngValue]="n">{{ n === 0 ? 'Sin gracia' : 'Gracia total: ' + n + (n === 1 ? ' semana' : ' semanas') }}</option>
+                <option [ngValue]="n">{{ n === 0 ? graceLabel(n) : 'Gracia total: ' + graceLabel(n) }}</option>
               }
             </select>
           </label>
@@ -150,7 +150,7 @@
           <div style="flex: 1"><strong>Período de gracia</strong>
             <small>Las semanas se cuentan desde la compra. En cada semana de gracia total no se paga y su interés se suma al
               saldo; el plazo se mantiene, así que las cuotas que siguen suben.</small></div>
-          <span class="badge info">{{ graceWeeks() === 0 ? 'Sin gracia' : graceWeeks() + (graceWeeks() === 1 ? ' semana' : ' semanas') }}</span>
+          <span class="badge info">{{ graceLabel(graceWeeks()) }}</span>
         </div>
       }
     </div>

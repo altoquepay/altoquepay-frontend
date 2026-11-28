@@ -1,4 +1,5 @@
 import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { lateTeaProblem } from '../../../shared/utils/rates';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Cycle, Payment } from '../../../billing/model/billing';
@@ -95,8 +96,9 @@ export class CustomerDetailPage implements OnInit {
       this.error.set('El día de pago debe ser posterior al día de corte.');
       return;
     }
-    if (Number(this.m.late_tea) <= Number(this.m.tea)) {
-      this.error.set('La TEA moratoria debe ser mayor que la TEA.');
+    const lateProblem = lateTeaProblem(this.m.tea, this.m.late_tea);
+    if (lateProblem) {
+      this.error.set(lateProblem);
       return;
     }
     this.busy.set(true);

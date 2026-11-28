@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { lateTeaProblem } from '../../../shared/utils/rates';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { parseError } from '../../../core/errors/api-error';
@@ -85,8 +86,9 @@ export class StoreProfilePage implements OnInit {
       this.preferencesError.set(`La TEA supera el tope del BCRP (${c.max_tea}%).`);
       return;
     }
-    if (Number(this.m.default_late_tea) <= Number(this.m.default_tea)) {
-      this.preferencesError.set('La TEA moratoria debe ser mayor que la TEA.');
+    const lateProblem = lateTeaProblem(this.m.default_tea, this.m.default_late_tea);
+    if (lateProblem) {
+      this.preferencesError.set(lateProblem);
       return;
     }
     this.saving.set(section);
