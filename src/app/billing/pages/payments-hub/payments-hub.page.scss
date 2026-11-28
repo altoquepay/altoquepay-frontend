@@ -7,13 +7,18 @@
   align-items: start;
 
   @media (max-width: 1180px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 .detail {
   position: sticky;
   top: calc(var(--topbar-h) + 16px);
+
+  // Below the table on narrow screens, it scrolls with the page.
+  @media (max-width: 1180px) {
+    position: static;
+  }
 }
 
 .person {

@@ -1,3 +1,19 @@
 :host {
   display: block;
 }
+
+.product-layout {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+
+  &.with-image {
+    grid-template-columns: minmax(0, 1fr) 240px;
+  }
+
+  // On a phone the image card goes below the form.
+  @media (max-width: 760px) {
+    &.with-image {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}

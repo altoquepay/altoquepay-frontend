@@ -37,7 +37,7 @@
     </div>
     <div class="metric">
       <span class="chip-icon sm violet"><app-icon name="database" [size]="17" /></span>
-      <div style="min-width: 120px"><small>Esta compra</small><strong>{{ p.amount | soles }}</strong>
+      <div class="metric-usage"><small>Esta compra</small><strong>{{ p.amount | soles }}</strong>
         <div class="progress-row"><div class="progress" style="flex: 1"><span [style.width.%]="usedPct()"></span></div><small>{{ usedPct() }}%</small></div></div>
     </div>
     <div class="metric">
@@ -86,7 +86,7 @@
   <div class="grid main-aside">
     <section class="card">
       @if (p.mode === 'WEEKLY') {
-        <h2>Plan de pagos ({{ p.installments_count }} cuotas{{ p.grace_weeks ? ' + ' + p.grace_weeks + (p.grace_weeks === 1 ? ' semana' : ' semanas') + ' de gracia' : '' }})</h2>
+        <h2>Plan de pagos ({{ p.installments_count }} cuotas{{ p.grace_weeks ? ' + ' + graceLabel(p.grace_weeks) + ' de gracia' : '' }})</h2>
         <p class="muted small" style="margin: 0 0 14px">Detalle de las cuotas del crédito. El estado se calcula con la fecha de hoy.
           En las semanas de gracia no se paga y su interés se suma al saldo.</p>
         <div class="table-wrap">
@@ -163,7 +163,7 @@
         @if (p.mode === 'WEEKLY') {
           <dt><app-icon name="percent" [size]="16" /> Tasa semanal</dt><dd>{{ p.weekly_rate | pct: 7 }}</dd>
           <dt><app-icon name="info" [size]="16" /> Período de gracia</dt>
-          <dd>{{ p.grace_weeks ? 'Gracia total (' + p.grace_weeks + (p.grace_weeks === 1 ? ' semana)' : ' semanas)') : 'Sin gracia' }}</dd>
+          <dd>{{ p.grace_weeks ? 'Gracia total (' + graceLabel(p.grace_weeks) + ')' : graceLabel(0) }}</dd>
         }
         <dt><app-icon name="coins" [size]="16" /> Moneda</dt><dd>Soles (S/)</dd>
       </dl>

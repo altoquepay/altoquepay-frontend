@@ -147,6 +147,8 @@ a {
 .grid {
   display: grid;
   gap: 18px;
+  // One column that can shrink: a wide table scrolls inside its card instead of widening the page.
+  grid-template-columns: minmax(0, 1fr);
 
   &.cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -189,21 +191,50 @@ a {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  // minmax(0, …): a wide table scrolls inside its card instead of stretching the page.
   .grid.main-aside,
   .grid.list-detail {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 760px) {
   .grid.cols-2,
-  .grid.cols-3,
+  .grid.cols-3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  // Two small figures still fit side by side on a phone; an odd last one takes the row.
   .grid.cols-4,
   .grid.cols-5 {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid.cols-5 > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 
   h1 {
     font-size: 1.45rem;
+  }
+
+  .page-head {
+    align-items: stretch;
+    margin-bottom: 18px;
+
+    > .actions {
+      width: 100%;
+
+      > .btn {
+        flex: 1;
+      }
+    }
+  }
+}
+
+@media (max-width: 340px) {
+  .grid.cols-4,
+  .grid.cols-5 {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

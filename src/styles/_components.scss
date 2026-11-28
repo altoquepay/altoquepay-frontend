@@ -124,6 +124,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 18px;
 
@@ -216,6 +217,15 @@
 
   &.big .value {
     font-size: 1.9rem;
+  }
+
+  // An amount or a date is read as one piece: "S/ 101.09", never "S/" over "101.09".
+  .value {
+    white-space: nowrap;
+  }
+
+  > div {
+    min-width: 0;
   }
 
   &.tint-blue {
@@ -319,7 +329,7 @@
 // ---------- Listas de definición ----------
 .kv {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0;
   margin: 0;
 
@@ -341,6 +351,8 @@
     text-align: right;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    padding-left: 12px;
   }
 
   dt:nth-last-child(2),
@@ -613,6 +625,19 @@ tfoot td {
   background: var(--info-soft);
   border: 1px solid #d3e8f6;
 
+  // On a phone the badge goes below the text instead of squeezing it.
+  @media (max-width: 640px) {
+    flex-wrap: wrap;
+
+    > div {
+      flex: 1 1 calc(100% - 50px);
+    }
+
+    > .badge {
+      margin-left: 46px;
+    }
+  }
+
   strong {
     display: block;
     font-size: 0.9rem;
@@ -720,6 +745,8 @@ tfoot td {
 
 .segmented {
   display: inline-flex;
+  max-width: 100%;
+  overflow-x: auto;
   background: #eaf0f5;
   border-radius: 10px;
   padding: 3px;
@@ -734,6 +761,7 @@ tfoot td {
     border-radius: 8px;
     color: var(--muted);
     cursor: pointer;
+    white-space: nowrap;
 
     &.active {
       background: #fff;
@@ -873,4 +901,59 @@ tfoot td {
   font-weight: 600;
   color: var(--ink-2);
   font-size: 0.88rem;
+}
+
+// Five figures in a row leave little room each: the numbers follow the width of the screen.
+.grid.cols-5 .stat {
+  padding: 16px;
+  gap: 12px;
+
+  .value {
+    font-size: clamp(1.05rem, 1.25vw, 1.4rem);
+  }
+}
+
+// ---------- Celulares ----------
+@media (max-width: 640px) {
+  .card {
+    padding: 16px;
+    border-radius: var(--radius);
+
+    > .table-wrap {
+      margin: 0 -16px;
+    }
+  }
+
+  .stat {
+    padding: 14px;
+    gap: 10px;
+
+    .value {
+      font-size: 1.2rem;
+    }
+
+    &.big .value {
+      font-size: 1.5rem;
+    }
+  }
+
+  .summary-bar .value {
+    font-size: 1.05rem;
+  }
+
+  // The main action of a form stays at hand while the page scrolls.
+  .actions.footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin: 0 -16px -40px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(6px);
+    border-top: 1px solid var(--line);
+
+    > .btn {
+      flex: 1;
+    }
+  }
 }

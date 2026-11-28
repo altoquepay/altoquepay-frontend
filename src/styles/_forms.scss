@@ -7,7 +7,7 @@
 .form-row {
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
 
   &.two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -20,7 +20,7 @@
   @media (max-width: 640px) {
     &.two,
     &.three {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 }
@@ -182,6 +182,10 @@ select.ng-invalid.ng-touched {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+
+  @media (max-width: 420px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .option-card {
@@ -239,6 +243,21 @@ select.ng-invalid.ng-touched {
 
   .grow input {
     width: 100%;
+  }
+
+  // On a phone each filter takes the whole row.
+  @media (max-width: 640px) {
+    > *,
+    .grow {
+      flex: 1 1 100%;
+      min-width: 0;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-width: 0;
+    }
   }
 }
 

@@ -104,9 +104,15 @@
 
 .store {
   display: flex;
+  flex: 1;
   gap: 10px;
   align-items: center;
   min-width: 0;
+
+  // Lets a long name end in "…" instead of running under the icons on a phone.
+  > div {
+    min-width: 0;
+  }
 
   strong {
     display: block;

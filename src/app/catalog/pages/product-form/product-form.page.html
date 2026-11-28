@@ -15,7 +15,7 @@
   </div>
 </div>
 <app-error [message]="error()" />
-<div class="grid" [style.grid-template-columns]="product() ? '1fr 240px' : '1fr'">
+<div class="grid product-layout" [class.with-image]="product()">
   <form class="card form" (ngSubmit)="save()" #f="ngForm">
     <div class="form-row">
       <label class="field">Código<input name="code" [(ngModel)]="m.code" required maxlength="30" /></label>

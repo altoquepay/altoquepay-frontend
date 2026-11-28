@@ -13,6 +13,14 @@
     min-width: 220px;
     padding-right: 20px;
     border-right: 1px solid var(--line);
+
+    // On a phone the person takes the first row and the figures wrap below.
+    @media (max-width: 640px) {
+      flex-basis: 100%;
+      padding: 0 0 14px;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+    }
   }
 
   .name {
@@ -31,6 +39,11 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  min-width: 0;
+
+  @media (max-width: 640px) {
+    flex: 1 1 40%;
+  }
 
   small {
     display: block;
@@ -41,6 +54,15 @@
   strong {
     font-size: 1.08rem;
     font-variant-numeric: tabular-nums;
+  }
+}
+
+.metric-usage {
+  min-width: 120px;
+
+  @media (max-width: 640px) {
+    flex: 1;
+    min-width: 0;
   }
 }
 
