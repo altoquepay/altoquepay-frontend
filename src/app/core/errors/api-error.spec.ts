@@ -58,3 +58,18 @@ describe('parseError', () => {
     expect(parseError(validationError('foo')).message).toBe('Revisa los datos del formulario.');
   });
 });
+
+describe('parseError for payment plans and late rates', () => {
+  it.each([
+    ['LATE_TEA_NOT_ABOVE_TEA', 'late_tea', 'La TEA moratoria debe ser mayor que la TEA.'],
+    ['INVALID_GRACE_WEEKS', 'grace_weeks', 'Las semanas de gracia solo aplican a compras en cuotas'],
+    ['MAX_WEEKS_EXCEEDED', 'grace_weeks', 'semanas de gracia superan'],
+  ])('explains %s in Spanish', (code, field, message) => {
+    const err = new HttpErrorResponse({
+      status: 422,
+      error: { code, message: 'English message', field, details: null },
+    });
+
+    expect(parseError(err).message).toContain(message);
+  });
+});
