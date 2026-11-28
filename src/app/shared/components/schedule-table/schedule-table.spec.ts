@@ -16,6 +16,7 @@ describe('ScheduleTable', () => {
   });
   const grace: GracePeriod = {
     number: 1,
+    week: 1,
     end_date: '2026-12-04',
     opening_balance: '100.00',
     interest: '1.09',
@@ -47,6 +48,13 @@ describe('ScheduleTable', () => {
     ]);
     expect(rows[0][7]).toBe('Gracia');
     expect(rows[1][0]).toBe('1');
+  });
+
+  it('puts a grace week chosen between installments in its place by date', () => {
+    const between: GracePeriod = { ...grace, week: 2, end_date: '2026-12-11' };
+    const rows = render([installment(1, '2026-12-04', '100.00'), installment(2, '2026-12-18', '68.85')], [between]);
+
+    expect(rows.map((row) => row[0])).toEqual(['1', 'G1', '2']);
   });
 
   it('shows only the installments without grace, and hides the status when asked', () => {

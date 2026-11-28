@@ -1,37 +1,49 @@
-import { fitInstallments, graceLabel, graceOptions, installmentOptions } from './payment-plan';
+import { fitGrace, graceLabel, planRows, planWeeks, termOptions, toggleGraceWeek } from './payment-plan';
+import { GracePeriod, Installment } from './purchase';
 
 describe('payment plan', () => {
-  it('offers installments that fit the weeks left by the grace', () => {
-    expect(installmentOptions(4, 0)).toEqual([1, 2, 3, 4]);
-    expect(installmentOptions(4, 1)).toEqual([1, 2, 3]);
-    expect(installmentOptions(4, 3)).toEqual([1]);
+  it('offers a term from 1 week to the maximum of the customer', () => {
+    expect(termOptions(4)).toEqual([1, 2, 3, 4]);
+    expect(termOptions(0)).toEqual([1]);
   });
 
-  it('always leaves at least one installment', () => {
-    expect(installmentOptions(1, 0)).toEqual([1]);
-    expect(graceOptions(1)).toEqual([0]);
+  it('makes any week but the last of grace, and back', () => {
+    let grace = toggleGraceWeek([], 3, 5);
+    grace = toggleGraceWeek(grace, 1, 5);
+    expect(grace).toEqual([1, 3]);
+
+    expect(toggleGraceWeek(grace, 3, 5)).toEqual([1]);
+    expect(toggleGraceWeek(grace, 5, 5)).toEqual([1, 3]);
   });
 
-  it('offers no grace up to one week less than the maximum', () => {
-    expect(graceOptions(4)).toEqual([0, 1, 2, 3]);
+  it('drops the grace weeks a shorter term leaves out, with its new last week', () => {
+    expect(fitGrace([1, 3, 4], 4)).toEqual([1, 3]);
+  });
+
+  it('lists the weeks of the term as installments or grace', () => {
+    expect(planWeeks(3, [2])).toEqual([
+      { week: 1, grace: false, last: false },
+      { week: 2, grace: true, last: false },
+      { week: 3, grace: false, last: true },
+    ]);
   });
 
   it.each([
-    // installments, grace, max → installments that keep the term within the maximum
-    [4, 1, 4, 3],
-    [4, 3, 4, 1],
-    [2, 1, 4, 2],
-    [3, 0, 4, 3],
-  ])('fits %i installments with %i grace weeks in %i weeks as %i', (count, grace, max, fitted) => {
-    expect(fitInstallments(count, grace, max)).toBe(fitted);
-  });
-
-  it.each([
-    [0, 'Sin gracia'],
+    [[], 'Sin gracia'],
     [null, 'Sin gracia'],
-    [1, '1 semana'],
-    [3, '3 semanas'],
-  ])('names %s grace weeks as %s', (weeks, label) => {
+    [[2], 'Semana 2'],
+    [[1, 3], 'Semanas 1 y 3'],
+    [[1, 2, 4], 'Semanas 1, 2 y 4'],
+  ])('names the grace weeks %s as %s', (weeks, label) => {
     expect(graceLabel(weeks)).toBe(label);
+  });
+
+  it('puts the grace weeks between the installments by date', () => {
+    const installment = (number: number, due_date: string) => ({ number, due_date }) as Installment;
+    const grace = { number: 1, week: 2, end_date: '2026-10-29' } as GracePeriod;
+
+    const rows = planRows([installment(1, '2026-10-22'), installment(2, '2026-11-05')], [grace]);
+
+    expect(rows.map((r) => (r.grace ? `G${r.grace.number}` : `${r.installment!.number}`))).toEqual(['1', 'G1', '2']);
   });
 });

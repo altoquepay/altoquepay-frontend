@@ -38,48 +38,62 @@ describe('PurchaseNewPage', () => {
 
     page.simulate();
 
-    expect(page.graceOptions()).toEqual([0, 1, 2, 3]);
-    expect(page.weekOptions()).toEqual([1, 2, 3, 4]);
-    expect(sent()).toMatchObject({ mode: 'WEEKLY', installments_count: 4, grace_weeks: 0 });
+    expect(page.termOptions()).toEqual([1, 2, 3, 4]);
+    expect(page.weeks().map((w) => w.grace)).toEqual([false, false, false, false]);
+    expect(sent()).toMatchObject({ mode: 'WEEKLY', installments_count: 4, grace_weeks: [] });
   });
 
-  it('keeps the term when grace is chosen, so the installments left go down', () => {
+  it('makes any week of the term of grace: at the start, between installments or both', () => {
     const { page, sent } = create();
 
-    page.setGraceWeeks(1);
+    page.toggleGrace(3);
+    page.toggleGrace(1);
     page.simulate();
 
-    expect(page.installments()).toBe(3);
-    expect(page.weekOptions()).toEqual([1, 2, 3]);
-    expect(sent()).toMatchObject({ installments_count: 3, grace_weeks: 1, items: [{ product_id: 3, quantity: 1 }] });
+    expect(page.installments()).toBe(2);
+    expect(sent()).toMatchObject({ installments_count: 2, grace_weeks: [1, 3], items: [{ product_id: 3, quantity: 1 }] });
   });
 
-  it('keeps the installments chosen when they already fit with the grace', () => {
+  it('never makes the last week of grace, and a second touch turns a week back into an installment', () => {
     const { page } = create();
 
-    page.setInstallments(2);
-    page.setGraceWeeks(2);
+    page.toggleGrace(4);
+    page.toggleGrace(2);
+    page.toggleGrace(2);
 
+    expect(page.graceWeeks()).toEqual([]);
+    expect(page.weeks()[3]).toEqual({ week: 4, grace: false, last: true });
+  });
+
+  it('drops the grace weeks a shorter term leaves out', () => {
+    const { page } = create();
+    page.toggleGrace(1);
+    page.toggleGrace(3);
+
+    page.setTerm(3);
+
+    expect(page.graceWeeks()).toEqual([1]);
     expect(page.installments()).toBe(2);
   });
 
   it('sends no installments nor grace for a single date purchase', () => {
     const { page, sent } = create();
 
-    page.setGraceWeeks(1);
+    page.toggleGrace(1);
     page.setMode('SINGLE_DATE');
     page.simulate();
 
-    expect(sent()).toMatchObject({ mode: 'SINGLE_DATE', installments_count: null, grace_weeks: 0 });
+    expect(sent()).toMatchObject({ mode: 'SINGLE_DATE', installments_count: null, grace_weeks: [] });
   });
 
-  it('fits the grace and installments to a customer with fewer weeks', () => {
+  it('fits the term and the grace to a customer with fewer weeks', () => {
     const { page } = create();
-    page.setGraceWeeks(3);
+    page.toggleGrace(3);
 
     page.pickCustomer({ ...account, max_weeks: 2 });
 
-    expect(page.graceWeeks()).toBe(1);
-    expect(page.installments()).toBe(1);
+    expect(page.term()).toBe(2);
+    expect(page.graceWeeks()).toEqual([]);
+    expect(page.installments()).toBe(2);
   });
 });
