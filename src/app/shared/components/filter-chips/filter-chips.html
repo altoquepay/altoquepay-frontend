@@ -1,0 +1,9 @@
+<div class="chips" role="group" [attr.aria-label]="label()">
+  @for (o of options(); track o.value) {
+    <button type="button" [class]="'chip' + (o.tone ? ' tone-' + o.tone : '') + (o.value === value() ? ' active' : '')"
+            [attr.aria-pressed]="o.value === value()" (click)="pick(o)">
+      {{ o.label }}
+      @if (o.count != null) { <span class="count">{{ o.count }}</span> }
+    </button>
+  }
+</div>

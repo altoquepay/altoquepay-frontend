@@ -1,0 +1,6 @@
+<div class="empty" [class.positive]="tone() === 'positive'" role="status">
+  <span class="icon"><app-icon [name]="tone() === 'positive' ? 'check-circle' : icon()" [size]="22" /></span>
+  <strong>{{ title() }}</strong>
+  @if (message()) { <p>{{ message() }}</p> }
+  <div class="action"><ng-content /></div>
+</div>
