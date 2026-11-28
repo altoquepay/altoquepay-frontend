@@ -86,7 +86,7 @@
   <div class="grid main-aside">
     <section class="card">
       @if (p.mode === 'WEEKLY') {
-        <h2>Plan de pagos ({{ p.installments_count }} cuotas{{ p.grace_weeks ? ' + ' + graceLabel(p.grace_weeks) + ' de gracia' : '' }})</h2>
+        <h2>Plan de pagos ({{ p.installments_count }} cuotas{{ p.grace_weeks?.length ? ' + gracia: ' + graceLabel(p.grace_weeks) : '' }})</h2>
         <p class="muted small" style="margin: 0 0 14px">Detalle de las cuotas del crédito. El estado se calcula con la fecha de hoy.
           En las semanas de gracia no se paga y su interés se suma al saldo.</p>
         <div class="table-wrap">
@@ -94,7 +94,8 @@
             <thead><tr><th>N° cuota</th><th>Fecha de vencimiento</th><th class="right">Saldo inicial</th><th class="right">Interés</th>
               <th class="right">Amortización</th><th class="right">Cuota</th><th class="right">Saldo final</th><th>Estado</th></tr></thead>
             <tbody>
-              @for (g of p.grace_periods; track g.number) {
+              @for (r of planRows(schedule(), p.grace_periods); track r.date) {
+                @if (r.grace; as g) {
                 <tr class="grace">
                   <td class="center strong">G{{ g.number }}</td>
                   <td>{{ g.end_date | fecha }}</td>
@@ -105,8 +106,7 @@
                   <td class="num">{{ g.closing_balance | soles }}</td>
                   <td><app-badge value="GRACE" label="Gracia" tone="info" /></td>
                 </tr>
-              }
-              @for (i of schedule(); track i.number) {
+                } @else if (r.installment; as i) {
                 <tr>
                   <td class="center strong">{{ i.number }}</td>
                   <td>{{ i.due_date | fecha }}</td>
@@ -117,6 +117,7 @@
                   <td class="num">{{ i.closing_balance | soles }}</td>
                   <td>@let st = status(i); <app-badge [value]="i.status" [label]="st.label" [tone]="st.tone" /></td>
                 </tr>
+                }
               }
             </tbody>
           </table>
@@ -163,7 +164,7 @@
         @if (p.mode === 'WEEKLY') {
           <dt><app-icon name="percent" [size]="16" /> Tasa semanal</dt><dd>{{ p.weekly_rate | pct: 7 }}</dd>
           <dt><app-icon name="info" [size]="16" /> Período de gracia</dt>
-          <dd>{{ p.grace_weeks ? 'Gracia total (' + graceLabel(p.grace_weeks) + ')' : graceLabel(0) }}</dd>
+          <dd>{{ p.grace_weeks?.length ? 'Gracia total (' + graceLabel(p.grace_weeks) + ')' : graceLabel(null) }}</dd>
         }
         <dt><app-icon name="coins" [size]="16" /> Moneda</dt><dd>Soles (S/)</dd>
       </dl>

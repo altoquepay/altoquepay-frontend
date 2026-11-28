@@ -5,23 +5,24 @@
         <th class="right">Cuota</th><th class="right">Saldo final</th>@if (showStatus()) { <th>Estado</th> }</tr>
     </thead>
     <tbody>
-      @for (g of grace(); track g.number) {
-        <tr class="grace">
-          <td>G{{ g.number }}</td><td>{{ g.end_date | fecha }}</td>
-          <td class="num">{{ g.opening_balance | soles }}</td><td class="num">{{ g.interest | soles }}</td>
-          <td class="num">{{ 0 | soles }}</td><td class="num"><strong>{{ 0 | soles }}</strong></td>
-          <td class="num">{{ g.closing_balance | soles }}</td>
-          @if (showStatus()) { <td><app-badge value="GRACE" label="Gracia" tone="info" /></td> }
-        </tr>
-      }
-      @for (i of items(); track i.number) {
-        <tr>
-          <td>{{ i.number }}</td><td>{{ i.due_date | fecha }}</td>
-          <td class="num">{{ i.opening_balance | soles }}</td><td class="num">{{ i.interest | soles }}</td>
-          <td class="num">{{ i.amortization | soles }}</td><td class="num"><strong>{{ i.amount | soles }}</strong></td>
-          <td class="num">{{ i.closing_balance | soles }}</td>
-          @if (showStatus()) { <td><app-badge [value]="i.status" /></td> }
-        </tr>
+      @for (r of rows(); track r.date) {
+        @if (r.grace; as g) {
+          <tr class="grace">
+            <td>G{{ g.number }}</td><td>{{ g.end_date | fecha }}</td>
+            <td class="num">{{ g.opening_balance | soles }}</td><td class="num">{{ g.interest | soles }}</td>
+            <td class="num">{{ 0 | soles }}</td><td class="num"><strong>{{ 0 | soles }}</strong></td>
+            <td class="num">{{ g.closing_balance | soles }}</td>
+            @if (showStatus()) { <td><app-badge value="GRACE" label="Gracia" tone="info" /></td> }
+          </tr>
+        } @else if (r.installment; as i) {
+          <tr>
+            <td>{{ i.number }}</td><td>{{ i.due_date | fecha }}</td>
+            <td class="num">{{ i.opening_balance | soles }}</td><td class="num">{{ i.interest | soles }}</td>
+            <td class="num">{{ i.amortization | soles }}</td><td class="num"><strong>{{ i.amount | soles }}</strong></td>
+            <td class="num">{{ i.closing_balance | soles }}</td>
+            @if (showStatus()) { <td><app-badge [value]="i.status" /></td> }
+          </tr>
+        }
       } @empty { <tr><td colspan="8" class="empty">Sin cuotas (compra de fecha única).</td></tr> }
     </tbody>
   </table>

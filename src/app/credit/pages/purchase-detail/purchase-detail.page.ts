@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { graceLabel } from '../../model/payment-plan';
+import { graceLabel, planRows } from '../../model/payment-plan';
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
@@ -33,6 +33,7 @@ import { PurchasesService } from '../../services/purchases.service';
 })
 export class PurchaseDetailPage implements OnInit {
   readonly graceLabel = graceLabel;
+  readonly planRows = planRows;
   private readonly productsApi = inject(ProductsService);
   private readonly purchasesApi = inject(PurchasesService);
   private readonly customersApi = inject(CustomersService);
