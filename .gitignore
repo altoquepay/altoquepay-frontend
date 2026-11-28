@@ -46,3 +46,6 @@ Thumbs.db
 # Firebase
 .firebase/
 firebase-debug.log*
+
+# Responsive check output
+/test-results

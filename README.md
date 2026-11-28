@@ -69,6 +69,8 @@ Every signed-in user can change their password and open *Ayuda y soporte* from t
 
 The UI follows the team mockups: a dark sidebar with the logo, white cards on a light background and the teal brand color (`#1AC2AE`). The design tokens live in `src/styles/_tokens.scss`, and the shared styles in the other partials of `src/styles/`. Icons are drawn by the `Icon` component (`<app-icon name="users" />`). The logo in `public/images/logo.png` was cut out of the mockups; replace it with the original file for a sharper image.
 
+The layout adapts from 320 px phones to wide screens. Below 960 px the sidebar becomes a drawer behind the menu button; below 760 px the grids stack and figures go two per row; below 640 px cards tighten, filters take the whole row and the main action of a form (*Registrar compra*, *Registrar pago*) stays fixed at the bottom of the screen. Wide tables scroll inside their card instead of widening the page.
+
 ## Project structure
 
 The `src/app` folders follow the bounded contexts of the backend:
@@ -107,7 +109,7 @@ To run the frontend locally against the team server, use `npx ng serve --configu
 
 - Angular 22 (standalone components, signals, zoneless change detection, SCSS, routing)
 - Template-driven forms and `HttpClient` with a functional interceptor
-- Vitest for unit tests
+- Vitest for unit tests and Playwright for the responsive check
 - TypeScript
 - npm
 
@@ -127,6 +129,16 @@ The app is served at `http://localhost:4200/` and reloads on file changes.
 | `npm start`     | Start the development server |
 | `npm run build` | Create a production build    |
 | `npm test`      | Run the unit tests           |
+
+### Responsive check
+
+`tests/responsive.mjs` opens every page at 320 to 1440 px with Playwright and reports anything that overflows the screen. It uses the Chrome or Edge already installed, so Playwright downloads no browser. With the app and the backend running, sign in as a store administrator through these variables:
+
+```bash
+STORE_EMAIL=admin@mi-bodega.pe STORE_PASSWORD=... node tests/responsive.mjs
+```
+
+`WIDTHS=375,768` limits the widths, `BROWSER_CHANNEL=msedge` uses Edge and `SCREENSHOTS=1` saves a screenshot of each page in `test-results/responsive/`. Without the variables it checks only the public pages.
 
 ## Deployment
 
