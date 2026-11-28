@@ -67,7 +67,14 @@
               <td class="right"><button type="button" class="btn sm" (click)="$event.stopPropagation(); open(r)">Cobrar</button></td>
             </tr>
           } @empty {
-            <tr><td colspan="7" class="empty">{{ loading() ? 'Cargando…' : 'No hay obligaciones por cobrar.' }}</td></tr>
+            <tr><td colspan="7" class="empty">
+              @if (loading()) { Cargando… }
+              @else if (filter() === 'OVERDUE') {
+                <app-empty-state tone="positive" title="No hay pagos vencidos" message="Tus clientes están al día." />
+              } @else {
+                <app-empty-state tone="positive" title="No hay obligaciones por cobrar" message="Cuando un cliente tenga una cuota o un estado de cuenta por pagar, aparecerá aquí." />
+              }
+            </td></tr>
           }
         </tbody>
       </table>

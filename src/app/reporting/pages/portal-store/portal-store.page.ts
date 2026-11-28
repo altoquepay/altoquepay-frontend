@@ -6,6 +6,7 @@ import { parseError } from '../../../core/errors/api-error';
 import { AccountOverview, CycleStatement, PortalPurchase, PurchaseSchedule } from '../../model/reporting';
 import { ReportingService } from '../../services/reporting.service';
 import { Badge } from '../../../shared/components/badge/badge';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { ErrorAlert } from '../../../shared/components/error-alert/error-alert';
 import { FechaPipe } from '../../../shared/pipes/fecha.pipe';
 import { LabelPipe } from '../../../shared/pipes/label.pipe';
@@ -22,7 +23,7 @@ type Tab = 'summary' | 'purchases' | 'statement';
   selector: 'app-portal-store',
   templateUrl: './portal-store.page.html',
   styleUrl: './portal-store.page.scss',
-  imports: [FormsModule, RouterLink, Badge, ErrorAlert, SolesPipe, PctPipe, LabelPipe, FechaPipe, MesPipe, Icon],
+  imports: [FormsModule, RouterLink, Badge, EmptyState, ErrorAlert, SolesPipe, PctPipe, LabelPipe, FechaPipe, MesPipe, Icon],
 })
 export class PortalStorePage implements OnInit {
   private readonly reportingApi = inject(ReportingService);

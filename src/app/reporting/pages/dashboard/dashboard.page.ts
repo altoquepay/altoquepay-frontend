@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { parseError } from '../../../core/errors/api-error';
 import { Badge } from '../../../shared/components/badge/badge';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { ErrorAlert } from '../../../shared/components/error-alert/error-alert';
 import { Icon } from '../../../shared/components/icon/icon';
 import { FechaPipe } from '../../../shared/pipes/fecha.pipe';
@@ -16,7 +17,7 @@ import { ReportingService } from '../../services/reporting.service';
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
-  imports: [RouterLink, ErrorAlert, Icon, Badge, SolesPipe, PctPipe, FechaPipe],
+  imports: [RouterLink, EmptyState, ErrorAlert, Icon, Badge, SolesPipe, PctPipe, FechaPipe],
 })
 export class DashboardPage implements OnInit {
   private readonly reportingApi = inject(ReportingService);

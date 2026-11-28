@@ -13,6 +13,17 @@
       <span>No hay un tope BCRP vigente: no podrás registrar compras hasta que soporte lo registre.</span></div>
   }
 
+  @if (d.overdue_installments + d.overdue_statements; as overdue) {
+    <div class="action-banner" role="status">
+      <app-icon name="alert" [size]="20" />
+      <div class="text">
+        <strong>{{ overdue }} {{ overdue === 1 ? 'pago vencido' : 'pagos vencidos' }} por {{ d.overdue_amount | soles }}</strong>
+        <span>Cada día suma interés moratorio. Cóbralos para que tus clientes se pongan al día.</span>
+      </div>
+      <a class="btn" routerLink="/store/payments">Cobrar ahora</a>
+    </div>
+  }
+
   <div class="grid cols-4">
     <div class="stat tint-blue upper">
       <span class="chip-icon blue"><app-icon name="users" /></span>
@@ -61,7 +72,9 @@
                 </td>
               </tr>
             } @empty {
-              <tr><td colspan="5" class="empty">Nada vence en los próximos 7 días.</td></tr>
+              <tr><td colspan="5" class="empty">
+                <app-empty-state tone="positive" title="Nada vence en los próximos 7 días" message="No tienes cobros pendientes esta semana." />
+              </td></tr>
             }
           </tbody>
         </table>
@@ -90,10 +103,20 @@
           <div><h2>Alerta</h2><p class="muted small" style="margin: 0">Situaciones que requieren tu atención.</p></div>
         </div>
         @if (d.overdue_installments + d.overdue_statements > 0) {
-          <a class="alert-link" routerLink="/store/payments">
-            <span><app-icon name="alert-circle" [size]="18" /> {{ d.overdue_installments + d.overdue_statements }} pagos vencidos requieren seguimiento.</span>
-            <app-icon name="chevron-right" [size]="18" />
-          </a>
+          <div class="stack-sm">
+            @if (d.overdue_installments) {
+              <a class="alert-link" routerLink="/store/installments" [queryParams]="{ status: 'OVERDUE' }">
+                <span><app-icon name="alert-circle" [size]="18" /> {{ d.overdue_installments }} {{ d.overdue_installments === 1 ? 'cuota semanal vencida' : 'cuotas semanales vencidas' }}</span>
+                <app-icon name="chevron-right" [size]="18" />
+              </a>
+            }
+            @if (d.overdue_statements) {
+              <a class="alert-link" routerLink="/store/cycles" [queryParams]="{ status: 'OVERDUE' }">
+                <span><app-icon name="alert-circle" [size]="18" /> {{ d.overdue_statements }} {{ d.overdue_statements === 1 ? 'estado de cuenta vencido' : 'estados de cuenta vencidos' }}</span>
+                <app-icon name="chevron-right" [size]="18" />
+              </a>
+            }
+          </div>
         } @else {
           <div class="alert success" style="margin: 0"><app-icon name="check-circle" [size]="18" /><span>No tienes pagos vencidos.</span></div>
         }

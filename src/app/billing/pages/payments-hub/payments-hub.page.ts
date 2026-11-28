@@ -9,6 +9,7 @@ import { PurchasesService } from '../../../credit/services/purchases.service';
 import { Dashboard } from '../../../reporting/model/reporting';
 import { ReportingService } from '../../../reporting/services/reporting.service';
 import { Badge } from '../../../shared/components/badge/badge';
+import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { ErrorAlert } from '../../../shared/components/error-alert/error-alert';
 import { Icon } from '../../../shared/components/icon/icon';
 import { Pager } from '../../../shared/components/pager/pager';
@@ -43,7 +44,7 @@ interface Obligation {
   selector: 'app-payments-hub',
   templateUrl: './payments-hub.page.html',
   styleUrl: './payments-hub.page.scss',
-  imports: [RouterLink, Badge, ErrorAlert, Icon, Pager, SolesPipe, PctPipe, FechaPipe, MesPipe],
+  imports: [RouterLink, Badge, EmptyState, ErrorAlert, Icon, Pager, SolesPipe, PctPipe, FechaPipe, MesPipe],
 })
 export class PaymentsHubPage implements OnInit {
   private readonly purchasesApi = inject(PurchasesService);
